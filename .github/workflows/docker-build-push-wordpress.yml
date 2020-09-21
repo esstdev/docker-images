@@ -1,4 +1,4 @@
-name: Build & Push Docker Images
+name: Wordpress - Build & Push to DockerHub
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
 
   build:
 
-    name: Build & Push Docker Images
+    name: Wordpress - Build & Push to DockerHub
 
     runs-on: ubuntu-latest
 
