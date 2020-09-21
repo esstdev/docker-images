@@ -1,5 +1,11 @@
 FROM wordpress:5.5-php7.4-apache
 
+ENV APACHE_RUN_USER noroot
+ENV APACHE_RUN_GROUP noroot
+
+RUN groupadd --gid 1000 noroot && \
+    useradd --uid 1000 --gid noroot --shell /bin/bash --create-home noroot
+
 RUN echo "ServerSignature Off" | tee -a /etc/apache2/apache2.conf && \
     echo "ServerTokens Prod" | tee -a /etc/apache2/apache2.conf
 
