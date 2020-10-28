@@ -28,6 +28,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          file: ./php/7.4/apache-buster/Dockerfile
           tags: esst/php:7.4-apache-buster
       -
         name: Image digest
