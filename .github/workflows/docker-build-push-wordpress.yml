@@ -30,6 +30,3 @@ jobs:
           push: true
           file: ./wordpress/Dockerfile
           tags: esst/wordpress:latest
-      -
-        name: Image digest
-        run: echo ${{ steps.docker_build_wordpress.outputs.digest }}

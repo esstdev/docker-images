@@ -22,14 +22,29 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      #############################
+      # [ PHP 7.4-apache-buster ] #
+      #############################
+
       -
-        name: Build and push
+        name: Build & Push [ PHP 7.4-apache-buster ]
         id: docker_build_php74_apache_buster
         uses: docker/build-push-action@v2
         with:
           push: true
           file: ./php/7.4/apache-buster/Dockerfile
           tags: esst/php:7.4-apache-buster
+
+      ##########################
+      # [ PHP 7.4-fpm-buster ] #
+      ##########################
+
       -
-        name: Image digest
-        run: echo ${{ steps.docker_build_php74_apache_buster.outputs.digest }}
+        name: Build & Push [ PHP 7.4-fpm-buster ]
+        id: docker_build_php74_fpm_buster
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: ./php/7.4/fpm-buster/Dockerfile
+          tags: esst/php:7.4-fpm-buster
