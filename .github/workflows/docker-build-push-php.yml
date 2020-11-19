@@ -48,3 +48,16 @@ jobs:
           push: true
           file: ./php/7.4/fpm-buster/Dockerfile
           tags: esst/php:7.4-fpm-buster
+
+      ##########################
+      # [ PHP 8.0-fpm-buster ] #
+      ##########################
+
+      -
+        name: Build & Push [ PHP 8.0-fpm-buster ]
+        id: docker_build_php80_fpm_buster
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: ./php/8.0/fpm-buster/Dockerfile
+          tags: esst/php:8.0-fpm-buster

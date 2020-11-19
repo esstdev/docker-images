@@ -1,4 +1,4 @@
-FROM php:7.4-fpm-buster
+FROM php:8.0.0RC4-fpm-buster
 
 # System
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -9,12 +9,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gnupg \
         sudo \
         default-mysql-client \
-        curl wget \
+        curl wget libicu-dev \
         zip unzip
 
-# Pecl extensions
 RUN \
-  # imagick + gd
+  # zip
+  apt-get install -y --no-install-recommends libzip-dev && \
+  docker-php-ext-configure zip && \
+  docker-php-ext-install zip && \
+  # others
+  docker-php-ext-configure bcmath && \
+  docker-php-ext-install bcmath pdo_mysql exif intl mysqli pcntl  && \
+  # ldap
+  apt-get install -y --no-install-recommends libldap2-dev && \
+  docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
+  docker-php-ext-install ldap && \
+  # gd
   apt-get install -y --no-install-recommends \
       libjpeg62-turbo-dev \
       libfreetype6-dev \
@@ -22,35 +32,29 @@ RUN \
       libmagickwand-dev \
       imagemagick && \
   docker-php-ext-configure gd --with-freetype --with-jpeg && \
-  docker-php-ext-install gd && \
-  pecl install imagick && \
-  docker-php-ext-enable imagick && \
-  # memcached
-  apt-get install -y --no-install-recommends libmemcached-dev && \
-  pecl install memcached && \
-  docker-php-ext-enable memcached && \
-  # memcache
-  pecl install memcache && \
-  docker-php-ext-enable memcache && \
-  # apcu
-  pecl install apcu && \
-  docker-php-ext-enable apcu && \
-  # redis
-  pecl install redis && \
-  docker-php-ext-enable redis
+  docker-php-ext-install gd
+
+# Pickle
+RUN curl -L -o /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v0.6.0/pickle.phar \
+	&& chmod +x /usr/local/bin/pickle
 
 RUN \
-  # ldap
-  apt-get install -y --no-install-recommends libldap2-dev && \
-  docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
-  docker-php-ext-install ldap && \
-  # zip
-  apt-get install -y --no-install-recommends libzip-dev && \
-  docker-php-ext-configure zip && \
-  docker-php-ext-install zip && \
-  # others
-  docker-php-ext-configure bcmath && \
-  docker-php-ext-install bcmath pdo_mysql exif intl mysqli pcntl
+  # imagick
+  pickle install imagick && \
+  # docker-php-ext-enable imagick && \
+  # memcached
+  apt-get install -y --no-install-recommends libmemcached-dev && \
+  pickle install memcached && \
+  docker-php-ext-enable memcached && \
+  # memcache
+  pickle install memcache && \
+  # docker-php-ext-enable memcache && \
+  # apcu
+  pickle install apcu && \
+  docker-php-ext-enable apcu && \
+  # redis
+  pickle install redis && \
+  docker-php-ext-enable redis
 
 # https://docs.spatie.be/laravel-medialibrary/v8/installation-setup/#optimization-tools
 RUN apt-get install -y --no-install-recommends jpegoptim optipng pngquant gifsicle
