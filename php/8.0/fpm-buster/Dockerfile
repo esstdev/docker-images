@@ -1,4 +1,4 @@
-FROM php:8.0.0RC5-fpm-buster
+FROM php:8.0.0-fpm-buster
 
 # System
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         nano \
         gnupg \
         sudo \
+        git \
         default-mysql-client \
         curl wget libicu-dev \
         zip unzip
@@ -29,8 +30,7 @@ RUN \
       libjpeg62-turbo-dev \
       libfreetype6-dev \
       libpng-dev \
-      libmagickwand-dev \
-      imagemagick && \
+      libmagickwand-dev && \
   docker-php-ext-configure gd --with-freetype --with-jpeg && \
   docker-php-ext-install gd
 
@@ -39,19 +39,35 @@ RUN curl -L -o /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/rele
 	&& chmod +x /usr/local/bin/pickle
 
 RUN \
+  #
   # imagick
-  pickle install imagick && \
-  # docker-php-ext-enable imagick && \
+  apt-get install -y --no-install-recommends imagemagick && \
+  cd /tmp && \
+  git clone https://github.com/Imagick/imagick && \
+  cd imagick && \
+  phpize && \
+  ./configure && \
+  make && \
+  make install && \
+  echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini && \
+  rm -rf /tmp/* && \
+  cd && \
+  #docker-php-ext-enable imagick && \
+  #pickle install imagick && \
+  #
   # memcached
   apt-get install -y --no-install-recommends libmemcached-dev && \
   pickle install memcached && \
   docker-php-ext-enable memcached && \
+  #
   # memcache
-  pickle install memcache && \
-  # docker-php-ext-enable memcache && \
+  # pickle install memcache && \
+  # docker-php-ext-enable memcache && \
+  #
   # apcu
   pickle install apcu && \
   docker-php-ext-enable apcu && \
+  #
   # redis
   pickle install redis && \
   docker-php-ext-enable redis
