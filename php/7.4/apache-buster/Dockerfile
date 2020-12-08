@@ -47,10 +47,10 @@ RUN \
     docker-php-ext-enable imagick && \
     # memcached
     apt-get install -y --no-install-recommends libmemcached-dev && \
-    pecl install memcached@3.1.5 && \
+    pecl install memcached-3.1.5 && \
     docker-php-ext-enable memcached && \
     # memcache
-    pecl install memcache@4.0.5.2 && \
+    pecl install memcache-4.0.5.2 && \
     docker-php-ext-enable memcache
 
 # clean packages
