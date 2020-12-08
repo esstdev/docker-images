@@ -15,7 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libfreetype6-dev \
         default-mysql-client \
         curl wget \
-        zip unzip && \
+        zip unzip
+
+# PHP ext
+RUN \
     # ldap installation & configuration
     apt-get install -y --no-install-recommends libldap2-dev && \
     docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
@@ -24,32 +27,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get install -y --no-install-recommends \
         libjpeg62-turbo-dev \
         libpng-dev \
-        libmagickwand-dev \
-        imagemagick && \
+        libmagickwand-dev && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd && \
-    pecl install imagick && \
-    docker-php-ext-enable imagick && \
     # zip configuration
     apt-get install -y --no-install-recommends libzip-dev && \
     docker-php-ext-configure zip && \
     docker-php-ext-install zip && \
-    # configure memcache/d
-    apt-get install -y --no-install-recommends libmemcached-dev && \
-    pecl install memcached && \
-    docker-php-ext-enable memcached && \
-    pecl install memcache && \
-    docker-php-ext-enable memcache && \
     # other extensions
     docker-php-ext-configure bcmath && \
-    docker-php-ext-install bcmath pdo_mysql exif exif intl mysqli pcntl && \
-    # clean things
-    apt-get remove -y libmemcached-dev libzip-dev libfreetype6-dev libpng-dev libmagickwand-dev libjpeg62-turbo-dev && \
+    docker-php-ext-install bcmath pdo_mysql exif exif intl mysqli pcntl
+
+# PECL
+RUN \
+    # imagick
+    apt-get install -y --no-install-recommends \
+        imagemagick && \
+    pecl install imagick && \
+    docker-php-ext-enable imagick && \
+    # memcached
+    apt-get install -y --no-install-recommends libmemcached-dev && \
+    pecl install memcached@3.1.5 && \
+    docker-php-ext-enable memcached && \
+    # memcache
+    pecl install memcache@4.0.5.2 && \
+    docker-php-ext-enable memcache
+
+# clean packages
+RUN apt-get remove -y libmemcached-dev libzip-dev libfreetype6-dev libpng-dev libmagickwand-dev libjpeg62-turbo-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite && \
-    # create non-root user
-    groupadd --gid 1000 noroot && \
+# apache config
+RUN a2enmod rewrite
+
+# add non-root user
+RUN groupadd --gid 1000 noroot && \
     useradd --uid 1000 --gid noroot --shell /bin/bash --create-home noroot
 
 RUN mkdir /app
