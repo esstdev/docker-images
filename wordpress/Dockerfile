@@ -14,7 +14,8 @@ RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 RUN touch /usr/local/etc/php/conf.d/docker-php-ext-app.ini && \
     { \
         echo "max_execution_time=40"; \
-        echo "post_max_size=30M"; \
+        echo "post_max_size=20M"; \
         echo "upload_max_filesize=20M"; \
         echo "memory_limit=256M"; \
+        echo "expose_php=off"; \
     } | tee -a /usr/local/etc/php/conf.d/docker-php-ext-app.ini
