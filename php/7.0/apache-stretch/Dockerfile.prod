@@ -68,6 +68,7 @@ RUN touch /usr/local/etc/php/conf.d/docker-php-ext-app.ini && \
         echo "post_max_size=30M"; \
         echo "upload_max_filesize=20M"; \
         echo "memory_limit=256M"; \
+        echo "expose_php=off"; \
     } | tee -a /usr/local/etc/php/conf.d/docker-php-ext-app.ini
 
 # cron
@@ -78,10 +79,9 @@ RUN { \
 ADD ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+RUN mkdir /app
 RUN mkdir /home/noroot/log
-RUN chown -R noroot:noroot /var/www/html
+RUN chown -R noroot:noroot /app
 RUN chown -R noroot:noroot /home/noroot
 
-WORKDIR /var/www/html
-
-ENTRYPOINT [ "/entrypoint.sh" ]
+WORKDIR /app
