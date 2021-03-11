@@ -1,4 +1,4 @@
-FROM wordpress:5.7-php8.0-apache
+FROM wordpress:5.7-php7.4-apache
 
 ENV APACHE_RUN_USER=noroot
 ENV APACHE_RUN_GROUP=noroot
