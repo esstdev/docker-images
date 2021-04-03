@@ -7,7 +7,18 @@ RUN apk add --no-cache --update \
     imap-dev \
     libzip-dev \
     libmemcached-dev \
-    icu-dev
+    icu-dev \
+    sudo \
+    bash \
+    supervisor \
+    ghostscript \
+    gnupg \
+    mysql-client
+    # nano \
+    # curl \
+    # wget \
+    # zip \
+    # unzip
 
 RUN set -ex; \
     \
@@ -62,20 +73,6 @@ RUN set -ex; \
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions imagick
 RUN rm -rf /usr/bin/install-php-extensions
-
-# keep these packages installed
-RUN apk add --update --no-cache \
-    sudo \
-    bash \
-    supervisor \
-    ghostscript \
-    gnupg \
-    mysql-client
-    # nano \
-    # curl \
-    # wget \
-    # zip \
-    # unzip
 
 RUN rm -rf /tmp/*
 
