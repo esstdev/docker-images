@@ -1,34 +1,32 @@
 FROM php:8.0-fpm-alpine3.13
 
+RUN set -ex
+
+# packages that need to be kept installed
+RUN apk add --no-cache --update \
+    imap-dev \
+    libzip-dev \
+    libmemcached-dev \
+    icu-dev
+
 RUN set -ex; \
     \
     apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         autoconf \
         freetype-dev \
-        icu-dev \
-        # libevent-dev \
+        libevent-dev \
         libjpeg-turbo-dev \
-        # libmcrypt-dev \
+        libmcrypt-dev \
         libpng-dev \
-        libmemcached-dev \
         libxml2-dev \
-        libzip-dev \
         openldap-dev \
+        curl-dev \
+        oniguruma-dev \
         # pcre-dev \
-        # postgresql-dev \
         # imagemagick-dev \
         # libwebp-dev \
         # gmp-dev \
-        ghostscript \
-        supervisor \
-        # nano \
-        gnupg \
-        mysql-client \
-        curl \
-        # wget \
-        # zip \
-        # unzip \
     ; \
     \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
@@ -41,60 +39,58 @@ RUN set -ex; \
         ldap \
         pcntl \
         pdo_mysql \
+        xml \
+        soap \
+        mbstring \
+        imap \
+        curl \
         zip; \
     \
-    # pecl install APCu-5.1.20; \
+    pecl install APCu; \
     pecl install memcached; \
     pecl install redis; \
     \
     docker-php-ext-enable \
-        #apcu \
+        apcu \
         memcached \
         redis; \
     \
     rm -rf /tmp/*; \
     apk del .build-deps
 
-# https://gist.github.com/SoftCreatR/d3393d918407f0f9177f88147832e925
-ENV PHPIZE_DEPS \
-    git \
-    make \
-    gcc \
-    g++ \
-    zlib-dev \
-    php8-dev
-ENV VERSION_OS='3.12'
-RUN set -eux; \
-    echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && \
-    apk add --no-cache \
-        imagemagick \
-        imagemagick-dev && \
-    rm -rf /var/cache/apk/* && \
-    cd /tmp && \
-    git clone https://github.com/Imagick/imagick && \
-    cd imagick && \
-    git checkout master && \
-    phpize && \
-    ./configure && \
-    make && \
-    make install && \
-    echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini && \
-    rm -rf /tmp/* && \
-    apk del .build-deps
+# temporary solution, waiting for imagick to be released officially
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+RUN install-php-extensions imagick
+RUN rm -rf /usr/bin/install-php-extensions
 
-# noroot user
-ENV USER noroot
-ENV HOME /home/$USER
+# keep these packages installed
+RUN apk add --update --no-cache \
+    sudo \
+    bash \
+    supervisor \
+    ghostscript \
+    gnupg \
+    mysql-client
+    # nano \
+    # curl \
+    # wget \
+    # zip \
+    # unzip
 
-RUN apk add --update sudo
+RUN rm -rf /tmp/*
 
-RUN adduser -D $USER \
-    && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
-    && chmod 0440 /etc/sudoers.d/$USER
+RUN addgroup -g 1000 -S noroot && \
+    adduser -u 1000 -S noroot -G noroot
+
+RUN adduser www-data noroot
+
+RUN sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf
+RUN sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf
+
+RUN mkdir /home/noroot; \
+    chown -R noroot:noroot /home/noroot;
 
 RUN mkdir /app; \
-    chown -R noroot:noroot /app; \
-    rm -rf /tmp/*
+    chown -R noroot:noroot /app;
 
-VOLUME /app
+WORKDIR /app
