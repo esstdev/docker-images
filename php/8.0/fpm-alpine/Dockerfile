@@ -20,9 +20,7 @@ RUN apk add --no-cache --update \
     # zip \
     # unzip
 
-RUN set -ex; \
-    \
-    apk add --no-cache --virtual .build-deps \
+RUN apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         autoconf \
         freetype-dev \
@@ -71,13 +69,13 @@ RUN set -ex; \
 
 # temporary solution, waiting for imagick to be released officially
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions imagick
-RUN rm -rf /usr/bin/install-php-extensions
+RUN install-php-extensions imagick && \
+    rm -rf /usr/bin/install-php-extensions
 
 RUN rm -rf /tmp/*
 
 RUN addgroup -g 1000 -S noroot && \
-    adduser -u 1000 -S noroot -G noroot
+    adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash
 
 RUN adduser www-data noroot
 
