@@ -53,6 +53,7 @@ RUN apk add --no-cache --virtual .build-deps \
         mbstring \
         imap \
         curl \
+        sockets \
         zip; \
     \
     pecl install APCu; \
