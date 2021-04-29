@@ -7,6 +7,7 @@ RUN apk add --no-cache --update \
     imap-dev \
     libzip-dev \
     libmemcached-dev \
+    libldap \
     icu-dev \
     sudo \
     bash \
