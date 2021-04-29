@@ -11,9 +11,9 @@ RUN apk add --no-cache --update \
     sudo \
     bash \
     supervisor \
-    ghostscript \
-    gnupg \
-    mysql-client
+    ghostscript
+    # gnupg \
+    # mysql-client
     # nano \
     # curl \
     # wget \
