@@ -9,7 +9,7 @@ RUN apk add --no-cache --update \
     libmemcached-dev \
     libldap \
     icu-dev \
-    sudo \
+    # sudo \
     bash \
     supervisor \
     ghostscript
