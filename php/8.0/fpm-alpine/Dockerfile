@@ -84,8 +84,8 @@ RUN adduser www-data noroot
 RUN sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf
 RUN sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf
 
-RUN mkdir /home/noroot; \
-    chown -R noroot:noroot /home/noroot;
+RUN mkdir -p /home/noroot/logs
+RUN chown -R noroot:noroot /home/noroot
 
 RUN mkdir /app; \
     chown -R noroot:noroot /app;
