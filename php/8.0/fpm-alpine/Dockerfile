@@ -12,7 +12,8 @@ RUN apk add --no-cache --update \
     # sudo \
     bash \
     supervisor \
-    ghostscript
+    ghostscript \
+    imagemagick
     # gnupg \
     # mysql-client
     # nano \
@@ -24,6 +25,8 @@ RUN apk add --no-cache --update \
 RUN apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         autoconf \
+        imagemagick-dev \
+        libtool \
         freetype-dev \
         libevent-dev \
         libjpeg-turbo-dev \
@@ -60,19 +63,16 @@ RUN apk add --no-cache --virtual .build-deps \
     pecl install APCu; \
     pecl install memcached; \
     pecl install redis; \
+    pecl install imagick; \
     \
     docker-php-ext-enable \
         apcu \
         memcached \
+        imagick \
         redis; \
     \
     rm -rf /tmp/*; \
     apk del .build-deps
-
-# temporary solution, waiting for imagick to be released officially
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-RUN install-php-extensions imagick && \
-    rm -rf /usr/bin/install-php-extensions
 
 RUN rm -rf /tmp/*
 
