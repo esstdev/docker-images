@@ -9,11 +9,13 @@ RUN apk add --no-cache --update \
     libmemcached-dev \
     libldap \
     icu-dev \
-    # sudo \
     bash \
     supervisor \
     ghostscript \
-    imagemagick
+    imagemagick \
+    imagemagick-dev \
+    libtool
+    # sudo \
     # gnupg \
     # mysql-client
     # nano \
@@ -25,8 +27,6 @@ RUN apk add --no-cache --update \
 RUN apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         autoconf \
-        imagemagick-dev \
-        libtool \
         freetype-dev \
         libevent-dev \
         libjpeg-turbo-dev \
@@ -74,20 +74,16 @@ RUN apk add --no-cache --virtual .build-deps \
     rm -rf /tmp/*; \
     apk del .build-deps
 
-RUN rm -rf /tmp/*
+RUN addgroup -g 1000 -S noroot; \
+    adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
+    adduser www-data noroot
 
-RUN addgroup -g 1000 -S noroot && \
-    adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash
-
-RUN adduser www-data noroot
-
-RUN sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf
-RUN sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf
-
-RUN mkdir -p /home/noroot/logs
-RUN chown -R noroot:noroot /home/noroot
+RUN sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
+    sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf
 
 RUN mkdir /app; \
-    chown -R noroot:noroot /app;
+    mkdir -p /home/noroot/logs; \
+    chown noroot:noroot /app; \
+    chown -R noroot:noroot /home/noroot;
 
 WORKDIR /app
