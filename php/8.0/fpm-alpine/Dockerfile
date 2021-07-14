@@ -13,6 +13,7 @@ RUN apk add --no-cache --update \
     supervisor \
     ghostscript \
     imagemagick \
+    libgomp \
     imagemagick-dev \
     libtool
     # sudo \
