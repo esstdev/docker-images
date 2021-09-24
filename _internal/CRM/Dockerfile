@@ -1,4 +1,4 @@
-FROM esst/php:7.0-apache-stretch
+FROM esst/php:7.4-apache-buster
 
 ENV APACHE_RUN_USER=noroot
 ENV APACHE_RUN_GROUP=noroot
