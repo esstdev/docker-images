@@ -10,6 +10,7 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    if: contains('refs/tags/crm', github.ref)
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -24,7 +25,6 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Build and push
-        if: ${{ contains('refs/tags/crm', github.ref) }}
         id: docker_build_crm
         uses: docker/build-push-action@v2
         with:
