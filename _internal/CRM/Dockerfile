@@ -28,8 +28,8 @@ RUN touch /usr/local/etc/php/conf.d/docker-php-ext-app.ini && \
 
 # Opcache
 RUN { \
-        echo "opcache.enable=1"; \
-        echo "opcache.enable_cli=1"; \
+        echo "opcache.enable=0"; \
+        echo "opcache.enable_cli=0"; \
         echo "opcache.fast_shutdown=1"; \
         echo "opcache.validate_timestamps=0"; \
         echo "opcache.memory_consumption=2048"; \
