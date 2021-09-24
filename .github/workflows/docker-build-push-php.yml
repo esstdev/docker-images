@@ -1,24 +1,24 @@
 name: esst/php
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - created
   schedule:
-    - cron: '0 13 * * 1'
+    - cron: '0 1 * * 1'
 
 jobs:
   main:
     runs-on: ubuntu-latest
+    if: ${{ contains('refs/tags/php', github.ref) }}
     steps:
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
+
+      - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -28,8 +28,8 @@ jobs:
       # [ PHP 8.1-fpm-alpine ] #
       ##########################
 
-      -
-        name: Build & Push [ PHP 8.1-fpm-alpine ]
+      - name: Build & Push [ PHP 8.1-fpm-alpine ]
+        if: ${{ contains('refs/tags/php-81-fpm-alpine', github.ref) }}
         id: docker_build_php81_fpm_alpine
         uses: docker/build-push-action@v2
         with:
@@ -41,8 +41,8 @@ jobs:
       # [ PHP 8.0-fpm-alpine ] #
       ##########################
 
-      -
-        name: Build & Push [ PHP 8.0-fpm-alpine ]
+      - name: Build & Push [ PHP 8.0-fpm-alpine ]
+        if: ${{ contains('refs/tags/php-80-fpm-alpine', github.ref) }}
         id: docker_build_php80_fpm_alpine
         uses: docker/build-push-action@v2
         with:
@@ -54,8 +54,8 @@ jobs:
       # [ PHP 8.0-fpm-buster ] #
       ##########################
 
-      -
-        name: Build & Push [ PHP 8.0-fpm-buster ]
+      - name: Build & Push [ PHP 8.0-fpm-buster ]
+        if: ${{ contains('refs/tags/php-80-fpm-buster', github.ref) }}
         id: docker_build_php80_fpm_buster
         uses: docker/build-push-action@v2
         with:
@@ -67,8 +67,8 @@ jobs:
       # [ PHP 8.0-apache-buster ] #
       #############################
 
-      -
-        name: Build & Push [ PHP 8.0-apache-buster ]
+      - name: Build & Push [ PHP 8.0-apache-buster ]
+        if: ${{ contains('refs/tags/php-80-apache-buster', github.ref) }}
         id: docker_build_php80_apache_buster
         uses: docker/build-push-action@v2
         with:

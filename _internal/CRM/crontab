@@ -1,0 +1,5 @@
+# m h  dom mon dow   command
+
+50 21 * * * find /app/db/ -name "*.sql.gz" -type f -mtime +5 -exec rm -f {} \;
+0 22 * * * . /.env; /usr/bin/mysqldump --user=$DB_USERNAME --host=$DB_HOST --password="$DB_PASSWORD" --port=3306 --single-transaction --quick $DB_NAME | gzip > /app/db/backup-`date +\%Y\%m\%d_\%H\%M\%S`.sql.gz
+* * * * * . /.env; /app/cron/vtigercron.sh >> /home/noroot/cron.log 2>&1

@@ -1,32 +1,33 @@
-name: esst/wordpress
+name: esst/esst:crm
 
 on:
-  push:
-    branches: main
+  release:
+    types:
+      - created
   schedule:
-    - cron: '0 13 * * 1'
+    - cron: '0 2 * * 1'
 
 jobs:
   main:
     runs-on: ubuntu-latest
+    if: ${{ contains('refs/tags/crm', github.ref) }}
     steps:
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
+
+      - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      -
-        name: Build and push
-        id: docker_build_wordpress
+
+      - name: Build and push
+        id: docker_build_crm
         uses: docker/build-push-action@v2
         with:
           push: true
-          file: ./wordpress/Dockerfile
-          tags: esst/wordpress:latest
+          file: ./_internal/CRM/Dockerfile
+          tags: esst/esst:crm
