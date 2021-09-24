@@ -1,4 +1,6 @@
-FROM esst/php:7.4-apache-buster
+FROM esst/php:7.0-apache-buster
+
+RUN apt-get update && apt-get upgrade -y
 
 ENV APACHE_RUN_USER=noroot
 ENV APACHE_RUN_GROUP=noroot
