@@ -10,7 +10,7 @@ RUN echo "ServerSignature Off" | tee -a /etc/apache2/apache2.conf && \
 
 COPY ./_internal/CRM/entrypoint.sh /entrypoint.sh
 COPY ./_internal/CRM/crontab /var/spool/cron/crontabs/noroot
-COPY ./_internal/CRM/files/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY ./_internal/CRM/apache.conf /etc/apache2/sites-available/000-default.conf
 
 RUN crontab -u noroot /var/spool/cron/crontabs/noroot
 RUN chmod +x /entrypoint.sh
