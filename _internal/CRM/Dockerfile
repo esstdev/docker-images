@@ -1,4 +1,4 @@
-FROM esst/php:7.0-apache-buster
+FROM esst/php:7.0-apache-stretch
 
 RUN apt-get update && apt-get upgrade -y
 
