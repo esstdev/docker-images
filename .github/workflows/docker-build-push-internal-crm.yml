@@ -10,7 +10,7 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
-    if: contains('crm', ${{ github.ref }})
+    if: contains('crm', github.ref)
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
