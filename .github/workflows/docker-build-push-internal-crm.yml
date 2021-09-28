@@ -5,12 +5,12 @@ on:
     types:
       - created
   schedule:
-    - cron: '0 2 * * 1'
+    - cron: '* * * * *'
 
 jobs:
   main:
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'refs/tags/crm')
+    if: ${{ contains(github.ref, 'refs/tags/crm') || github.event_name === 'schedule' }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
