@@ -48,7 +48,13 @@ RUN \
   pecl install APCu && \
   #
   # redis
-  pecl install redis
+  pecl install redis && \
+  #
+  docker-php-ext-enable \
+    apcu \
+    memcached \
+    imagick \
+    redis
 
 # https://docs.spatie.be/laravel-medialibrary/v8/installation-setup/#optimization-tools
 RUN apt-get install -y --no-install-recommends jpegoptim optipng pngquant gifsicle
