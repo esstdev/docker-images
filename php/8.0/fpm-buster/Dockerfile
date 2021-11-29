@@ -34,43 +34,21 @@ RUN \
   docker-php-ext-configure gd --with-freetype --with-jpeg && \
   docker-php-ext-install gd
 
-# Pickle
-RUN curl -L -o /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v0.6.0/pickle.phar \
-	&& chmod +x /usr/local/bin/pickle
-
 RUN \
   #
   # imagick
   apt-get install -y --no-install-recommends imagemagick && \
-  cd /tmp && \
-  git clone https://github.com/Imagick/imagick && \
-  cd imagick && \
-  phpize && \
-  ./configure && \
-  make && \
-  make install && \
-  echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini && \
-  rm -rf /tmp/* && \
-  cd && \
-  #docker-php-ext-enable imagick && \
-  #pickle install imagick && \
+  pecl install imagick && \
   #
   # memcached
   apt-get install -y --no-install-recommends libmemcached-dev && \
-  pickle install memcached && \
-  docker-php-ext-enable memcached && \
-  #
-  # memcache
-  # pickle install memcache && \
-  # docker-php-ext-enable memcache && \
+  pecl install memcached && \
   #
   # apcu
-  pickle install apcu && \
-  docker-php-ext-enable apcu && \
+  pecl install APCu && \
   #
   # redis
-  pickle install redis && \
-  docker-php-ext-enable redis
+  pecl install redis
 
 # https://docs.spatie.be/laravel-medialibrary/v8/installation-setup/#optimization-tools
 RUN apt-get install -y --no-install-recommends jpegoptim optipng pngquant gifsicle
