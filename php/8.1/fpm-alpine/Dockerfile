@@ -1,7 +1,5 @@
 FROM php:8.1-fpm-alpine3.15
 
-RUN set -ex
-
 # packages that need to be kept installed
 RUN apk add --no-cache --update \
     imap-dev \
