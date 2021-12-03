@@ -33,7 +33,7 @@ jobs:
         id: docker_build_php81_fpm_alpine
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           file: ./php/8.1/fpm-alpine/Dockerfile
           tags: esst/php:8.1-fpm-alpine
@@ -47,7 +47,7 @@ jobs:
         id: docker_build_php80_fpm_alpine
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           file: ./php/8.0/fpm-alpine/Dockerfile
           tags: esst/php:8.0-fpm-alpine
@@ -61,7 +61,7 @@ jobs:
         id: docker_build_php80_fpm_buster
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           file: ./php/8.0/fpm-buster/Dockerfile
           tags: esst/php:8.0-fpm-buster
@@ -75,7 +75,7 @@ jobs:
         id: docker_build_php80_apache_buster
         uses: docker/build-push-action@v2
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           file: ./php/8.0/apache-buster/Dockerfile
           tags: esst/php:8.0-apache-buster
