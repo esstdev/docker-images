@@ -22,9 +22,10 @@ RUN \
   docker-php-ext-configure bcmath && \
   docker-php-ext-install bcmath pdo_mysql exif intl mysqli pcntl  && \
   # ldap
-  apt-get install -y --no-install-recommends libldap2-dev && \
-  docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
-  docker-php-ext-install ldap && \
+  apt-get install -y --no-install-recommends libldap2-dev libldb-dev && \
+  ln -s /usr/lib/$(uname -m)-linux-gnu/libldap.so /usr/lib/libldap.so && \
+  ln -s /usr/lib/$(uname -m)-linux-gnu/liblber.so /usr/lib/liblber.so && \
+  docker-php-ext-configure ldap --with-libdir=lib/$(uname -m)-linux-gnu && \
   # gd
   apt-get install -y --no-install-recommends \
       libjpeg62-turbo-dev \
