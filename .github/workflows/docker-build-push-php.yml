@@ -52,20 +52,6 @@ jobs:
           file: ./php/8.0/fpm-alpine/Dockerfile
           tags: esst/php:8.0-fpm-alpine
 
-      ##########################
-      # [ PHP 8.0-fpm-buster ] #
-      ##########################
-
-      - name: Build & Push [ PHP 8.0-fpm-buster ]
-        if: ${{ contains(github.ref, 'php-8.0-fpm-buster') || github.event_name == 'schedule' }}
-        id: docker_build_php80_fpm_buster
-        uses: docker/build-push-action@v2
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          file: ./php/8.0/fpm-buster/Dockerfile
-          tags: esst/php:8.0-fpm-buster
-
       #############################
       # [ PHP 8.0-apache-buster ] #
       #############################
