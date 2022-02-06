@@ -43,7 +43,7 @@ RUN apk add --no-cache --virtual .build-deps \
     \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-configure ldap; \
-    docker-php-ext-configure zip; \
+    docker-php-ext-configure zip --with-zip; \
     docker-php-ext-install -j "$(nproc)" \
         bcmath \
         exif \
