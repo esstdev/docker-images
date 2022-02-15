@@ -31,4 +31,4 @@ jobs:
         with:
           push: true
           file: ./_internal/wordpress/5/Dockerfile
-          tags: esst/esst:wordpress-5
+          tags: esst/wordpress:5
