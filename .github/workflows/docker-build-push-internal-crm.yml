@@ -1,11 +1,11 @@
-name: esst/esst:crm
+name: esst/crm
 
 on:
   release:
     types:
       - created
   schedule:
-    - cron: '0 5 * * 1'
+    - cron: '0 1 * * 0'
 
 jobs:
   main:
@@ -30,4 +30,4 @@ jobs:
         with:
           push: true
           file: ./_internal/CRM/Dockerfile
-          tags: esst/esst:crm
+          tags: esst/vtiger
