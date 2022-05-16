@@ -1,4 +1,4 @@
-name: esst/esst:wordpress
+name: esst/wordpress
 
 on:
   release:
