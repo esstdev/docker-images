@@ -1,4 +1,4 @@
-name: esst/esst:crm
+name: esst/crm
 
 on:
   release:
@@ -30,4 +30,4 @@ jobs:
         with:
           push: true
           file: ./_internal/CRM/Dockerfile
-          tags: esst/esst:crm
+          tags: esst/vtiger
