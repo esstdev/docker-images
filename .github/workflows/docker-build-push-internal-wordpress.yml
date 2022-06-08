@@ -32,3 +32,12 @@ jobs:
           push: true
           file: ./_internal/wordpress/5/Dockerfile
           tags: esst/wordpress:5
+
+      - name: Build & Push [ wordpress-6 ]
+        if: ${{ contains(github.ref, 'wordpress-6') || github.event_name == 'schedule' }}
+        id: docker_build_wordpress_6
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: ./_internal/wordpress/6/Dockerfile
+          tags: esst/wordpress:6
