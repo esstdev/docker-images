@@ -34,6 +34,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libxml2-dev \
         openldap-dev \
         curl-dev \
+        curl=7.83.1-r3 \
         oniguruma-dev \
         # pcre-dev \
         # imagemagick-dev \
