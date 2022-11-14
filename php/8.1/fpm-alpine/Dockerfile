@@ -34,13 +34,14 @@ RUN apk add --no-cache --virtual .build-deps \
         libxml2-dev \
         openldap-dev \
         curl-dev \
-        curl=7.83.1-r3 \
+        curl \
         oniguruma-dev \
         # pcre-dev \
         # imagemagick-dev \
         # libwebp-dev \
         # gmp-dev \
     ; \
+    apk del --purge .build-deps; \
     \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-configure ldap; \
@@ -71,8 +72,7 @@ RUN apk add --no-cache --virtual .build-deps \
         imagick \
         redis; \
     \
-    rm -rf /tmp/*; \
-    apk del .build-deps
+    rm -rf /tmp/*;
 
 RUN addgroup -g 1000 -S noroot; \
     adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
