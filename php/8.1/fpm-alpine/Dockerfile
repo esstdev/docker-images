@@ -23,7 +23,7 @@ RUN apk add --no-cache --update \
     # zip \
     # unzip
 
-RUN apk add --no-cache --virtual .build-deps \
+RUN apk add --no-cache --update --virtual build-deps \
         $PHPIZE_DEPS \
         autoconf \
         freetype-dev \
@@ -41,8 +41,6 @@ RUN apk add --no-cache --virtual .build-deps \
         # libwebp-dev \
         # gmp-dev \
     ; \
-    apk del --purge .build-deps; \
-    \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-configure ldap; \
     docker-php-ext-configure zip --with-zip; \
@@ -73,6 +71,8 @@ RUN apk add --no-cache --virtual .build-deps \
         redis; \
     \
     rm -rf /tmp/*;
+
+RUN apk del --purge build-deps
 
 RUN addgroup -g 1000 -S noroot; \
     adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
