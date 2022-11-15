@@ -7,7 +7,7 @@ RUN apk add --no-cache --update \
     libmemcached-dev \
     libldap \
     icu-dev \
-    bash \
+    # bash \
     supervisor \
     ghostscript \
     imagemagick \
@@ -23,7 +23,7 @@ RUN apk add --no-cache --update \
     # zip \
     # unzip
 
-RUN apk add --no-cache --update --virtual build-deps \
+RUN apk add --no-cache --virtual build-deps \
         $PHPIZE_DEPS \
         autoconf \
         freetype-dev \
@@ -34,7 +34,7 @@ RUN apk add --no-cache --update --virtual build-deps \
         libxml2-dev \
         openldap-dev \
         curl-dev \
-        curl \
+        #curl \
         oniguruma-dev \
         # pcre-dev \
         # imagemagick-dev \
@@ -53,26 +53,25 @@ RUN apk add --no-cache --update --virtual build-deps \
         pcntl \
         pdo_mysql \
         xml \
-        soap \
+        #soap \
         mbstring \
-        imap \
+        #imap \
         curl \
         zip \
     ; \
-    pecl install APCu; \
+    #pecl install APCu; \
     pecl install memcached; \
     pecl install redis; \
     pecl install imagick; \
     \
     docker-php-ext-enable \
-        apcu \
+        #apcu \
         memcached \
         imagick \
         redis; \
     \
-    rm -rf /tmp/*;
-
-RUN apk del --purge build-deps
+    rm -rf /tmp/*; \
+    apk del build-deps
 
 RUN addgroup -g 1000 -S noroot; \
     adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
