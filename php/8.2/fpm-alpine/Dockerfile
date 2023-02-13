@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.16
+FROM php:8.2-fpm-alpine3.17
 
 # packages that need to be kept installed
 RUN apk add --no-cache --update \
@@ -7,7 +7,7 @@ RUN apk add --no-cache --update \
     libmemcached-dev \
     libldap \
     icu-dev \
-    # bash \
+    bash \
     supervisor \
     ghostscript \
     imagemagick \
