@@ -13,7 +13,9 @@ RUN apk add --no-cache --update \
     imagemagick \
     libgomp \
     imagemagick-dev \
-    libtool
+    libtool \
+    "curl=7.87.0-r2" \
+    "libcurl=7.87.0-r2"
     # sudo \
     # gnupg \
     # mysql-client
@@ -33,13 +35,13 @@ RUN apk add --no-cache --virtual build-deps \
         libpng-dev \
         libxml2-dev \
         openldap-dev \
-        curl-dev \
-        #curl \
+        "curl-dev=7.87.0-r2" \
         oniguruma-dev \
+        # curl \
         # pcre-dev \
-        # imagemagick-dev \
+        # imagemagick-dev \
         # libwebp-dev \
-        # gmp-dev \
+        # gmp-dev \
     ; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-configure ldap; \
