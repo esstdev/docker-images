@@ -1,7 +1,8 @@
 FROM php:8.2-fpm-alpine3.17
 
-# packages that need to be kept installed
-RUN apk add --no-cache --update \
+RUN \
+    # packages that need to be kept installed
+    apk add --no-cache --update \
     imap-dev \
     libzip-dev \
     libmemcached-dev \
@@ -13,17 +14,13 @@ RUN apk add --no-cache --update \
     imagemagick \
     libgomp \
     imagemagick-dev \
-    libtool
-    # sudo \
-    # gnupg \
-    # mysql-client
-    # nano \
-    # curl \
-    # wget \
-    # zip \
-    # unzip
-
-RUN apk add --no-cache --virtual build-deps \
+    libtool \
+    "libcurl>=7.87.0-r2" \
+    "curl>=7.87.0-r2" \
+    "tar>=1.34-r2" \
+    ; \
+    # virtual deps
+    apk add --no-cache --virtual build-deps \
         $PHPIZE_DEPS \
         autoconf \
         freetype-dev \
@@ -33,14 +30,10 @@ RUN apk add --no-cache --virtual build-deps \
         libpng-dev \
         libxml2-dev \
         openldap-dev \
-        curl-dev \
-        #curl \
+        "curl-dev>=7.87.0-r2" \
         oniguruma-dev \
-        # pcre-dev \
-        # imagemagick-dev \
-        # libwebp-dev \
-        # gmp-dev \
     ; \
+    # PHP extensions
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-configure ldap; \
     docker-php-ext-configure zip --with-zip; \
@@ -53,34 +46,26 @@ RUN apk add --no-cache --virtual build-deps \
         pcntl \
         pdo_mysql \
         xml \
-        #soap \
         mbstring \
-        #imap \
         curl \
         zip \
     ; \
-    #pecl install APCu; \
-    pecl install memcached; \
-    pecl install redis; \
-    pecl install imagick; \
-    \
+    pecl install \
+        memcached \
+        redis \
+        imagick; \
     docker-php-ext-enable \
-        #apcu \
         memcached \
         imagick \
         redis; \
-    \
     rm -rf /tmp/*; \
-    apk del build-deps
-
-RUN addgroup -g 1000 -S noroot; \
+    apk del build-deps; \
+    addgroup -g 1000 -S noroot; \
     adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
-    adduser www-data noroot
-
-RUN sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
-    sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf
-
-RUN mkdir /app; \
+    adduser www-data noroot; \
+    sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
+    sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
+    mkdir /app; \
     mkdir -p /home/noroot/logs; \
     chown noroot:noroot /app; \
     chown -R noroot:noroot /home/noroot;
