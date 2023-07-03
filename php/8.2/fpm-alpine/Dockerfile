@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine3.17
+FROM php:8.2-fpm-alpine3.18
 
 RUN \
     # packages that need to be kept installed
@@ -15,9 +15,9 @@ RUN \
     libgomp \
     imagemagick-dev \
     libtool \
-    "libcurl>=7.87.0-r2" \
-    "curl>=7.87.0-r2" \
-    "tar>=1.34-r2" \
+    libcurl \
+    curl \
+    tar \
     ; \
     # virtual deps
     apk add --no-cache --virtual build-deps \
@@ -30,7 +30,7 @@ RUN \
         libpng-dev \
         libxml2-dev \
         openldap-dev \
-        "curl-dev>=7.87.0-r2" \
+        curl-dev \
         oniguruma-dev \
     ; \
     # PHP extensions
