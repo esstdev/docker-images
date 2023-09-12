@@ -30,7 +30,7 @@ jobs:
 
       - name: Test Build & Push [ PHP 8.2-fpm-alpine ]
         if: ${{ contains(github.ref, 'php-8.2-fpm-alpine') || github.event_name == 'schedule' }}
-        id: docker_build_php82_fpm_alpine
+        id: docker_build_php82_fpm_alpine_test
         uses: docker/build-push-action@v4
         with:
           load: true
