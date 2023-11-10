@@ -66,7 +66,7 @@ jobs:
       - name: Build & Push [ PHP 8.2-fpm-alpine-full ]
         if: success() && (contains(github.ref, 'php-8.2-fpm-alpine') || github.event_name == 'schedule')
         id: docker_build_php82_fpm_alpine_full
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           platforms: linux/amd64,linux/arm64
           push: true
