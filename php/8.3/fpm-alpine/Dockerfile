@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine3.18
+FROM php:8.3-fpm-alpine3.19
 
 RUN \
     # packages that need to be kept installed
@@ -22,6 +22,7 @@ RUN \
     # virtual deps
     apk add --no-cache --virtual build-deps \
         $PHPIZE_DEPS \
+        git \
         autoconf \
         freetype-dev \
         libevent-dev \
@@ -52,22 +53,30 @@ RUN \
     ; \
     pecl install \
         memcached \
-        redis \
-        imagick; \
+        redis; \
     docker-php-ext-enable \
         memcached \
-        imagick \
-        redis; \
-    rm -rf /tmp/*; \
-    apk del build-deps; \
-    addgroup -g 1000 -S noroot; \
-    adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
-    adduser www-data noroot; \
-    sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
-    sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
-    mkdir /app; \
-    mkdir -p /home/noroot/logs; \
-    chown noroot:noroot /app; \
-    chown -R noroot:noroot /home/noroot;
+        redis;
+
+# install imagick directly from master
+RUN git clone https://github.com/Imagick/imagick.git --depth 1 /tmp/imagick; \
+    cd /tmp/imagick; \
+    phpize; \
+    ./configure; \
+    make; \
+    make install; \
+    docker-php-ext-enable imagick;
+
+RUN rm -rf /tmp/*; \
+        apk del build-deps; \
+        addgroup -g 1000 -S noroot; \
+        adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
+        adduser www-data noroot; \
+        sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
+        sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
+        mkdir /app; \
+        mkdir -p /home/noroot/logs; \
+        chown noroot:noroot /app; \
+        chown -R noroot:noroot /home/noroot;
 
 WORKDIR /app
