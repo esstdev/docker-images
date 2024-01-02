@@ -1,4 +1,4 @@
-FROM php:8.3.0RC6-fpm-alpine3.18
+FROM php:8.3-fpm-alpine3.18
 
 RUN \
     # packages that need to be kept installed
