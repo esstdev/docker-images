@@ -68,15 +68,8 @@ RUN git clone https://github.com/Imagick/imagick.git --depth 1 /tmp/imagick; \
     docker-php-ext-enable imagick;
 
 RUN rm -rf /tmp/*; \
-        apk del build-deps; \
-        addgroup -g 1000 -S noroot; \
-        adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash; \
-        adduser www-data noroot; \
-        sed -i s/'user = www-data'/'user = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
-        sed -i s/'group = www-data'/'group = noroot'/g /usr/local/etc/php-fpm.d/www.conf; \
-        mkdir /app; \
-        mkdir -p /home/noroot/logs; \
-        chown noroot:noroot /app; \
-        chown -R noroot:noroot /home/noroot;
+    apk del build-deps; \
+    mkdir -p /app /home/www-data/logs;
+    chown -R www-data:www-data /app /home/www-data;
 
 WORKDIR /app
