@@ -69,7 +69,7 @@ RUN git clone https://github.com/Imagick/imagick.git --depth 1 /tmp/imagick; \
 
 RUN rm -rf /tmp/*; \
     apk del build-deps; \
-    mkdir -p /app /home/www-data/logs;
+    mkdir -p /app; \
     chown -R www-data:www-data /app /home/www-data;
 
 WORKDIR /app
