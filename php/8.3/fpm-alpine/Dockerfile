@@ -59,6 +59,7 @@ RUN \
         redis;
 
 # install imagick directly from master
+# TODO: remove in future version? rely only in GD which is enough for our use-case
 RUN git clone https://github.com/Imagick/imagick.git --depth 1 /tmp/imagick; \
     cd /tmp/imagick; \
     phpize; \
