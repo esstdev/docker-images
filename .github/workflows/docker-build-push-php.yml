@@ -23,11 +23,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      ##########################
-      # [ PHP 8.2-fpm-alpine ] #
-      ##########################
-
+          
+      # PHP 8.2-fpm-alpine
+      
       - name: Test Build & Push [ PHP 8.2-fpm-alpine ]
         if: ${{ contains(github.ref, 'php-8.2-fpm-alpine@') || github.event_name == 'schedule' }}
         id: docker_build_php82_fpm_alpine_test
@@ -63,9 +61,7 @@ jobs:
           file: ./php/8.2/fpm-alpine/Dockerfile
           tags: esst/php:8.2-fpm-alpine
 
-      ##########################
-      # [ PHP 8.3-fpm-alpine ] #
-      ##########################
+      # PHP 8.3-fpm-alpine
 
       - name: Test Build & Push [ PHP 8.3-fpm-alpine ]
         if: ${{ contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule' }}
