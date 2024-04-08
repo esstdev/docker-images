@@ -69,3 +69,13 @@ jobs:
           push: true
           file: ./php/8.3/fpm-alpine/Dockerfile.nginx
           tags: esst/php:8.3-fpm-nginx-alpine
+
+      - name: Build & Push [ PHP 8.3-fpm-alpine-legacy ]
+        if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@'))
+        id: docker_build_php83_fpm_alpine_legacy
+        uses: docker/build-push-action@v5
+        with:
+          platforms: linux/amd64
+          push: true
+          file: ./php/8.3/fpm-alpine/Dockerfile.legacy
+          tags: esst/php:8.3-fpm-alpine-legacy
