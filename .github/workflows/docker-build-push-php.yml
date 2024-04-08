@@ -66,6 +66,7 @@ jobs:
         id: docker_build_php83_fpm_nginx_alpine_test
         uses: docker/build-push-action@v5
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           file: ./php/8.3/fpm-alpine/Dockerfile.nginx
           tags: esst/php:8.3-fpm-nginx-alpine
