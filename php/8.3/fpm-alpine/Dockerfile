@@ -73,20 +73,15 @@ RUN \
     cp -R /usr/local/lib/php/extensions/tmp/* "$extensions_dir"; \
     # install required dependencies
     apk add --no-cache --update \
-        imap-dev \
-        libzip-dev \
-        libmemcached-dev \
-        libldap \
         bash \
-        supervisor \
-        ghostscript \
-        imagemagick \
-        libgomp \
-        imagemagick-dev \
-        libtool \
-        libcurl \
         curl \
-        tar \
+        imagemagick \
+        libldap \
+        libzip \
+        libmemcached \
+        libtool \
+        libgomp \
+        supervisor \
     \
     && addgroup -g 1000 -S noroot \
     && adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash \
