@@ -82,7 +82,6 @@ RUN \
         libmemcached \
         libtool \
         libgomp \
-        opcache \
         supervisor \
     \
     && addgroup -g 1000 -S noroot \
