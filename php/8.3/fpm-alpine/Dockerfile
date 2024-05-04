@@ -107,6 +107,7 @@ RUN \
         memcached \
         redis \
         imagick \
+        opcache \
         sockets
         #swoole
 
