@@ -42,6 +42,7 @@ RUN apk add --no-cache --update \
         mbstring \
         curl \
         zip \
+        opcache \
         sockets \
     && pecl install \
         memcached \
@@ -81,6 +82,7 @@ RUN \
         libmemcached \
         libtool \
         libgomp \
+        opcache \
         supervisor \
     \
     && addgroup -g 1000 -S noroot \
