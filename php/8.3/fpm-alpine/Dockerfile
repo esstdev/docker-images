@@ -2,30 +2,30 @@
 FROM php:8.3-fpm-alpine3.19 AS builder
 
 RUN apk add --no-cache --update \
-        $PHPIZE_DEPS \
-        git \
         autoconf \
-        freetype-dev \
-        libevent-dev \
-        libjpeg-turbo-dev \
-        libmcrypt-dev \
-        libpng-dev \
-        libxml2-dev \
-        openldap-dev \
+        curl \
         curl-dev \
-        oniguruma-dev \
-        imap-dev \
-        libzip-dev \
-        libmemcached-dev \
-        libldap \
+        freetype-dev \
+        git \
         icu-dev \
         imagemagick \
-        libgomp \
         imagemagick-dev \
-        libtool \
+        imap-dev \
         libcurl \
-        curl \
+        libevent-dev \
+        libgomp \
+        libjpeg-turbo-dev \
+        libldap \
+        libmcrypt-dev \
+        libmemcached-dev \
+        libpng-dev \
+        libtool \
+        libxml2-dev \
+        libzip-dev \
         linux-headers \
+        oniguruma-dev \
+        openldap-dev \
+        $PHPIZE_DEPS \
     \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure ldap \
@@ -77,6 +77,7 @@ RUN \
         bash \
         curl \
         imagemagick \
+        imagemagick-pdf \
         libldap \
         libzip \
         libmemcached \
