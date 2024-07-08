@@ -29,7 +29,7 @@ jobs:
       - name: Test Build & Push [ PHP 8.3-fpm-alpine ]
         if: ${{ contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule' }}
         id: docker_build_php83_fpm_alpine_test
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           load: true
           file: ./php/8.3/fpm-alpine/Dockerfile
@@ -54,7 +54,7 @@ jobs:
       - name: Build & Push [ PHP 8.3-fpm-alpine ]
         if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule')
         id: docker_build_php83_fpm_alpine
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           push: true
@@ -64,7 +64,7 @@ jobs:
       - name: Build & Push [ PHP 8.3-fpm-nginx-alpine ]
         if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@') || contains(github.ref, 'php-8.3-fpm-nginx-alpine@') || github.event_name == 'schedule')
         id: docker_build_php83_fpm_nginx_alpine_test
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           push: true
@@ -74,7 +74,7 @@ jobs:
       - name: Build & Push [ PHP 8.3-fpm-alpine-legacy ]
         if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@'))
         id: docker_build_php83_fpm_alpine_legacy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64
           push: true
