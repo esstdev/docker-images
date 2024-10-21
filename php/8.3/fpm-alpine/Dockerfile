@@ -1,5 +1,5 @@
 # Stage 1
-FROM php:8.3-fpm-alpine3.19 AS builder
+FROM php:8.3-fpm-alpine3.20 AS builder
 
 RUN apk add --no-cache --update \
         autoconf \
