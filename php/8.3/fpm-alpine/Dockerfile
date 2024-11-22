@@ -64,7 +64,7 @@ RUN apk add --no-cache --update \
     && rm -rf /tmp/*
 
 # Final stage
-FROM php:8.3-fpm-alpine3.19
+FROM php:8.3-fpm-alpine3.20
 
 COPY --from=builder /usr/local/lib/php/extensions/no-debug-non-zts-* /usr/local/lib/php/extensions/tmp
 
