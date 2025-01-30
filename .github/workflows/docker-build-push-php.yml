@@ -71,7 +71,6 @@ jobs:
           file: ./php/8.3/fpm-alpine/Dockerfile.nginx
           tags: esst/php:8.3-fpm-nginx-alpine
 
-
       # PHP 8.4-fpm-alpine
 
       - name: Test Build & Push [ PHP 8.4-fpm-alpine ]
