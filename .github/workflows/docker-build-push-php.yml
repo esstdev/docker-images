@@ -6,12 +6,21 @@ on:
       - created
   schedule:
     - cron: '0 1 * * 1'
+  workflow_dispatch:
+    inputs:
+      php_version:
+        description: "PHP Version (e.g., 8.3, 8.4)"
+        required: true
+      variant:
+        description: "Variant (fpm-alpine, fpm-nginx-alpine)"
+        required: true
 
 jobs:
   build-and-test:
     strategy:
       matrix:
         php_version: [8.3, 8.4]
+        variant: [fpm-alpine, fpm-nginx-alpine]
         arch: [amd64, arm64]
         include:
           - arch: amd64
@@ -22,6 +31,11 @@ jobs:
             platform: linux/arm64
 
     runs-on: ${{ matrix.runner }}
+
+    if: |
+      (github.event_name == 'release' && startsWith(github.ref, 'refs/tags/php-${{ matrix.php_version }}-${{ matrix.variant }}@v2.')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.php_version == matrix.php_version && github.event.inputs.variant == matrix.variant) ||
+      (github.event_name == 'schedule')
 
     steps:
       - name: Checkout repository
@@ -36,24 +50,21 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      ## Test Build
-      - name: Test Build [PHP ${{ matrix.php_version }}]
-        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
+      - name: Build Image (Per Architecture) [PHP ${{ matrix.php_version }}-${{ matrix.variant }}]
         uses: docker/build-push-action@v6
         with:
           platforms: ${{ matrix.platform }}
           load: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-test-${{ matrix.arch }}
+          file: ./php/${{ matrix.php_version }}/${{ matrix.variant }}/Dockerfile
+          tags: esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }}
 
-      ## Run container for testing
-      - name: Run container for testing [PHP ${{ matrix.php_version }}]
-        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
+      - name: Run container for testing [PHP ${{ matrix.php_version }}-${{ matrix.variant }}]
+        if: matrix.arch == 'amd64'
         run: |
-          docker run -d --name php_container${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine-test-${{ matrix.arch }}
+          docker run -d --name php_container${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }}
 
-      - name: Check PHP extensions [PHP ${{ matrix.php_version }}]
-        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
+      - name: Check PHP extensions [PHP ${{ matrix.php_version }}-${{ matrix.variant }}]
+        if: matrix.arch == 'amd64'
         run: |
           extensions=("bcmath" "exif" "gd" "intl" "ldap" "pcntl" "pdo_mysql" "xml" "mbstring" "curl" "zip" "memcached" "imagick" "redis")
           for ext in "${extensions[@]}"; do
@@ -64,39 +75,62 @@ jobs:
           done
           echo "✅ All extensions are installed"
 
-      ## Build & Push Final Image
-      - name: Build & Push [PHP ${{ matrix.php_version }}]
-        if: success()
-        uses: docker/build-push-action@v6
+      - name: Save Image for Merge [PHP ${{ matrix.php_version }}-${{ matrix.variant }}]
+        run: docker save esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }} | gzip > php-${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }}.tar.gz
+
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v3
         with:
-          platforms: ${{ matrix.platform }}
-          push: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-${{ matrix.arch }}
+          name: php-${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }}
+          path: php-${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.arch }}.tar.gz
+          retention-days: 1
 
   merge-manifest:
     needs: build-and-test
     strategy:
       matrix:
         php_version: [8.3, 8.4]
+        variant: [fpm-alpine, fpm-nginx-alpine]
 
     runs-on: ubuntu-latest
+
+    if: |
+      (github.event_name == 'release' && startsWith(github.ref, 'refs/tags/php-${{ matrix.php_version }}-${{ matrix.variant }}@v2.')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.php_version == matrix.php_version && github.event.inputs.variant == matrix.variant) ||
+      (github.event_name == 'schedule')
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Inspect pushed images
-        run: |
-          docker manifest inspect esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 || echo "No amd64 image found"
-          docker manifest inspect esst/php:${{ matrix.php_version }}-fpm-alpine-arm64 || echo "No arm64 image found"
+      - name: Download amd64 Image
+        uses: actions/download-artifact@v3
+        with:
+          name: php-${{ matrix.php_version }}-${{ matrix.variant }}-amd64
 
-      - name: Create and Push Multi-Arch Manifest [PHP ${{ matrix.php_version }}]
+      - name: Download arm64 Image
+        uses: actions/download-artifact@v3
+        with:
+          name: php-${{ matrix.php_version }}-${{ matrix.variant }}-arm64
+
+      - name: Load Images
         run: |
-          docker manifest create esst/php:${{ matrix.php_version }}-fpm-alpine \
-            --amend esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 \
-            --amend esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
-          
-          docker manifest push esst/php:${{ matrix.php_version }}-fpm-alpine
+          docker load < php-${{ matrix.php_version }}-${{ matrix.variant }}-amd64.tar.gz
+          docker load < php-${{ matrix.php_version }}-${{ matrix.variant }}-arm64.tar.gz
+
+      - name: Create and Push Multi-Arch Manifest [PHP ${{ matrix.php_version }}-${{ matrix.variant }}]
+        run: |
+          docker manifest create esst/php:${{ matrix.php_version }}-${{ matrix.variant }} \
+            --amend esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-amd64 \
+            --amend esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-arm64
+
+          docker manifest push esst/php:${{ matrix.php_version }}-${{ matrix.variant }}
