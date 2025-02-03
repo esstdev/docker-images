@@ -1,6 +1,12 @@
 # Stage 1
 FROM php:8.3-fpm-alpine3.20 AS builder
 
+RUN apk add --no-cache --update --virtual .build-deps \
+        build-base \
+        linux-headers \
+        pkgconf \
+        $PHPIZE_DEPS
+
 RUN apk add --no-cache --update \
         autoconf \
         curl \
@@ -25,7 +31,6 @@ RUN apk add --no-cache --update \
         linux-headers \
         oniguruma-dev \
         openldap-dev \
-        $PHPIZE_DEPS \
     \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure ldap \
@@ -50,17 +55,18 @@ RUN apk add --no-cache --update \
         #swoole \
     && docker-php-ext-enable \
         memcached \
-        redis \
-        #swoole \
-    \
-    && git clone --depth 1 https://github.com/Imagick/imagick.git /tmp/imagick \
+        redis
+        #swoole
+
+RUN git clone --depth 1 https://github.com/Imagick/imagick.git /tmp/imagick \
     && cd /tmp/imagick \
     && phpize \
     && ./configure \
     && make \
     && make install \
-    && docker-php-ext-enable imagick \
-    \
+    && docker-php-ext-enable imagick
+
+RUN apk del .build-deps \
     && rm -rf /tmp/*
 
 # Final stage
