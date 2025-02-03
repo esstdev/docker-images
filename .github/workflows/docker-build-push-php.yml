@@ -32,11 +32,6 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
 
-    if: |
-      (github.event_name == 'release' && contains(github.ref, format('php-{0}-{1}@v2.', matrix.php_version, matrix.variant))) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.php_version == matrix.php_version && github.event.inputs.variant == matrix.variant) ||
-      (github.event_name == 'schedule')
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -83,11 +78,6 @@ jobs:
         variant: [fpm-alpine, fpm-nginx-alpine]
 
     runs-on: ubuntu-latest
-
-    if: |
-      (github.event_name == 'release' && startsWith(github.ref, 'refs/tags/php-${{ matrix.php_version }}-${{ matrix.variant }}@v2.')) ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.php_version == matrix.php_version && github.event.inputs.variant == matrix.variant) ||
-      (github.event_name == 'schedule')
 
     steps:
       - name: Login to DockerHub
