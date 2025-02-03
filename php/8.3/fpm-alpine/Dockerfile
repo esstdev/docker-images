@@ -5,9 +5,7 @@ RUN apk add --no-cache --update --virtual .build-deps \
         build-base \
         linux-headers \
         pkgconf \
-        $PHPIZE_DEPS
-
-RUN apk add --no-cache --update \
+        $PHPIZE_DEPS \
         autoconf \
         curl \
         curl-dev \

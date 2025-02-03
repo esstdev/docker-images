@@ -8,12 +8,24 @@ on:
     - cron: '0 1 * * 1'
 
 jobs:
-  main:
-    runs-on: ubuntu-latest
-    if: ${{ contains(github.ref, 'php') || github.event_name == 'schedule' }}
+  build-and-test:
+    strategy:
+      matrix:
+        php_version: [8.3, 8.4]
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            platform: linux/amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            platform: linux/arm64
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -24,96 +36,62 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      # PHP 8.3-fpm-alpine
-
-      - name: Test Build & Push [ PHP 8.3-fpm-alpine ]
-        if: ${{ contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule' }}
-        id: docker_build_php83_fpm_alpine_test
+      ## Test Build
+      - name: Test Build [PHP ${{ matrix.php_version }}]
+        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
         uses: docker/build-push-action@v6
         with:
+          platforms: ${{ matrix.platform }}
           load: true
-          file: ./php/8.3/fpm-alpine/Dockerfile
-          tags: esst/php:8.3-fpm-alpine-test
+          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
+          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-test-${{ matrix.arch }}
 
-      - name: Run container
-        if: contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule'
-        run: docker run -d --name php_container83 esst/php:8.3-fpm-alpine-test
+      ## Run container for testing
+      - name: Run container for testing [PHP ${{ matrix.php_version }}]
+        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
+        run: |
+          docker run -d --name php_container${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine-test-${{ matrix.arch }}
 
-      - name: Check PHP extensions
-        if: contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule'
+      - name: Check PHP extensions [PHP ${{ matrix.php_version }}]
+        if: contains(github.ref, 'php-${{ matrix.php_version }}-fpm-alpine@') || github.event_name == 'schedule'
         run: |
           extensions=("bcmath" "exif" "gd" "intl" "ldap" "pcntl" "pdo_mysql" "xml" "mbstring" "curl" "zip" "memcached" "imagick" "redis")
           for ext in "${extensions[@]}"; do
-            if ! docker exec php_container83 bash -c "php -m | grep -wq '$ext'"; then
+            if ! docker exec php_container${{ matrix.php_version }} bash -c "php -m | grep -wq '$ext'"; then
               echo "$ext extension is NOT installed"
               exit 1
             fi
           done
-          echo "All extensions are installed"
+          echo "✅ All extensions are installed"
 
-      - name: Build & Push [ PHP 8.3-fpm-alpine ]
-        if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@') || github.event_name == 'schedule')
-        id: docker_build_php83_fpm_alpine
+      ## Build & Push Final Image
+      - name: Build & Push [PHP ${{ matrix.php_version }}]
+        if: success()
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
-          file: ./php/8.3/fpm-alpine/Dockerfile
-          tags: esst/php:8.3-fpm-alpine
+          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
+          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-${{ matrix.arch }}
 
-      - name: Build & Push [ PHP 8.3-fpm-nginx-alpine ]
-        if: success() && (contains(github.ref, 'php-8.3-fpm-alpine@') || contains(github.ref, 'php-8.3-fpm-nginx-alpine@') || github.event_name == 'schedule')
-        id: docker_build_php83_fpm_nginx_alpine_test
-        uses: docker/build-push-action@v6
+  merge-manifest:
+    needs: build-and-test
+    strategy:
+      matrix:
+        php_version: [8.3, 8.4]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          file: ./php/8.3/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:8.3-fpm-nginx-alpine
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      # PHP 8.4-fpm-alpine
-
-      - name: Test Build & Push [ PHP 8.4-fpm-alpine ]
-        if: ${{ contains(github.ref, 'php-8.4-fpm-alpine@') || github.event_name == 'schedule' }}
-        id: docker_build_php84_fpm_alpine_test
-        uses: docker/build-push-action@v6
-        with:
-          load: true
-          file: ./php/8.4/fpm-alpine/Dockerfile
-          tags: esst/php:8.4-fpm-alpine-test
-
-      - name: Run container
-        if: contains(github.ref, 'php-8.4-fpm-alpine@') || github.event_name == 'schedule'
-        run: docker run -d --name php_container84 esst/php:8.4-fpm-alpine-test
-
-      - name: Check PHP extensions
-        if: contains(github.ref, 'php-8.4-fpm-alpine@') || github.event_name == 'schedule'
+      - name: Create and Push Multi-Arch Manifest [PHP ${{ matrix.php_version }}]
         run: |
-          extensions=("bcmath" "exif" "gd" "intl" "ldap" "pcntl" "pdo_mysql" "xml" "mbstring" "curl" "zip" "memcached" "imagick" "redis")
-          for ext in "${extensions[@]}"; do
-            if ! docker exec php_container84 bash -c "php -m | grep -wq '$ext'"; then
-              echo "$ext extension is NOT installed"
-              exit 1
-            fi
-          done
-          echo "All extensions are installed"
-
-      - name: Build & Push [ PHP 8.4-fpm-alpine ]
-        if: success() && (contains(github.ref, 'php-8.4-fpm-alpine@') || github.event_name == 'schedule')
-        id: docker_build_php84_fpm_alpine
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          file: ./php/8.4/fpm-alpine/Dockerfile
-          tags: esst/php:8.4-fpm-alpine
-
-      - name: Build & Push [ PHP 8.4-fpm-nginx-alpine ]
-        if: success() && (contains(github.ref, 'php-8.4-fpm-alpine@') || contains(github.ref, 'php-8.4-fpm-nginx-alpine@') || github.event_name == 'schedule')
-        id: docker_build_php84_fpm_nginx_alpine_test
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          file: ./php/8.4/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:8.4-fpm-nginx-alpine
+          docker manifest create esst/php:${{ matrix.php_version }}-fpm-alpine \
+            esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 \
+            esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
+          
+          docker manifest push esst/php:${{ matrix.php_version }}-fpm-alpine
