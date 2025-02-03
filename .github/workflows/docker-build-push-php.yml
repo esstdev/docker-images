@@ -88,10 +88,15 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+      - name: Inspect pushed images
+        run: |
+          docker manifest inspect esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 || echo "No amd64 image found"
+          docker manifest inspect esst/php:${{ matrix.php_version }}-fpm-alpine-arm64 || echo "No arm64 image found"
+
       - name: Create and Push Multi-Arch Manifest [PHP ${{ matrix.php_version }}]
         run: |
           docker manifest create esst/php:${{ matrix.php_version }}-fpm-alpine \
-            esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 \
-            esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
+            --amend esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 \
+            --amend esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
           
           docker manifest push esst/php:${{ matrix.php_version }}-fpm-alpine
