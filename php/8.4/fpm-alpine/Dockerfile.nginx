@@ -1,10 +1,10 @@
 # adapted from https://github.com/macbre/docker-nginx-http3
 
 # https://hg.nginx.org/nginx/file/tip/src/core/nginx.h
-ARG NGINX_VERSION=1.27.2
+ARG NGINX_VERSION=1.27.4
 
 # https://hg.nginx.org/nginx
-ARG NGINX_COMMIT=331eae3dccf8
+ARG NGINX_COMMIT=cfa2aef9a28c
 
 # https://github.com/google/ngx_brotli
 ARG NGX_BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53

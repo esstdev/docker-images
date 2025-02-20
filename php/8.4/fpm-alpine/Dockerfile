@@ -1,5 +1,5 @@
 # Stage 1
-FROM php:8.4-fpm-alpine3.20 AS builder
+FROM php:8.4-fpm-alpine3.21 AS builder
 
 RUN apk add --no-cache --update \
         autoconf \
@@ -69,7 +69,7 @@ RUN IPE_ICU_EN_ONLY=1 install-php-extensions \
     Imagick/imagick@65e27f2bc0
 
 # Final stage
-FROM php:8.4-fpm-alpine3.20
+FROM php:8.4-fpm-alpine3.21
 
 COPY --from=builder /usr/local/lib/php/extensions/no-debug-non-zts-* /usr/local/lib/php/extensions/tmp
 

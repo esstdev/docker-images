@@ -1,5 +1,5 @@
 # Stage 1
-FROM php:8.3-fpm-alpine3.20 AS builder
+FROM php:8.3-fpm-alpine3.21 AS builder
 
 RUN apk add --no-cache --update \
         autoconf \
@@ -64,7 +64,7 @@ RUN apk add --no-cache --update \
     && rm -rf /tmp/*
 
 # Final stage
-FROM php:8.3-fpm-alpine3.20
+FROM php:8.3-fpm-alpine3.21
 
 COPY --from=builder /usr/local/lib/php/extensions/no-debug-non-zts-* /usr/local/lib/php/extensions/tmp
 
