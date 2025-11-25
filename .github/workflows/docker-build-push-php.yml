@@ -253,7 +253,6 @@ jobs:
       - build-test-and-push-amd64-nginx
       - build-and-push-arm64-fpm
       - build-and-push-arm64-nginx
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
