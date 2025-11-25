@@ -137,6 +137,7 @@ jobs:
         run: |
           docker build \
             --progress=plain \
+            --build-arg ARCH=amd64 \
             -t esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-amd64 \
             -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx \
             .
@@ -236,6 +237,7 @@ jobs:
         run: |
           docker build \
             --progress=plain \
+            --build-arg ARCH=arm64 \
             -t esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-arm64 \
             -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx \
             .
