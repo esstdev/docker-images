@@ -45,7 +45,7 @@ jobs:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -108,7 +108,7 @@ jobs:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -156,7 +156,7 @@ jobs:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -207,7 +207,7 @@ jobs:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -260,7 +260,7 @@ jobs:
         variant: [ fpm-alpine, fpm-nginx-alpine ]
     steps:
       - name: Skip non-matching versions on release
-        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Set up Docker Buildx
