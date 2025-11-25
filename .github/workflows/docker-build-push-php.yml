@@ -69,10 +69,10 @@ jobs:
           push: false
           load: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-test
+          tags: esst/php:${{ matrix.php_version }}-fpm-alpine
 
       - name: Run container for testing
-        run: docker run -d --name fpm_alpine_test_${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine-test
+        run: docker run -d --name fpm_alpine_test_${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine
 
       - name: Check PHP extensions
         run: |
@@ -85,10 +85,10 @@ jobs:
           done
           echo "All required extensions are installed"
       - name: Save test FPM image
-        run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine-test
+        run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine
 
       - name: Upload test FPM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: fpm_test_${{ matrix.php_version }}
           path: fpm_test_${{ matrix.php_version }}.tar
@@ -130,7 +130,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Download FPM test image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: fpm_test_${{ matrix.php_version }}
 
