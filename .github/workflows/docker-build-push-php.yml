@@ -39,7 +39,6 @@ jobs:
   build-test-and-push-amd64-fpm:
     runs-on: ubuntu-latest
     needs: prepare
-    # Only run if we're on a schedule or a 'php-*' tag.  Then also skip if the version doesn't match on a release.
     if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
@@ -62,14 +61,12 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Build AMD64 FPM-Alpine (not pushed yet)
-        id: docker_build_fpm
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          push: false
-          load: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine
+        run: |
+          docker build \
+            --progress=plain \
+            -t esst/php:${{ matrix.php_version }}-fpm-alpine \
+            -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile \
+            .
 
       - name: Run container for testing
         run: docker run -d --name fpm_alpine_test_${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine
@@ -84,6 +81,7 @@ jobs:
             fi
           done
           echo "All required extensions are installed"
+
       - name: Save test FPM image
         run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine
 
@@ -95,12 +93,7 @@ jobs:
           retention-days: 1
 
       - name: Push Tested AMD64 FPM-Alpine
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          push: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-amd64
+        run: docker push esst/php:${{ matrix.php_version }}-fpm-alpine-amd64
 
   # ============================================================================================
   # BUILD & PUSH AMD64 - FPM + NGINX ALPINE
@@ -138,13 +131,17 @@ jobs:
         run: docker load -i fpm_test_${{ matrix.php_version }}.tar
 
       - name: Build AMD64 FPM-Nginx-Alpine
-        id: docker_build_nginx
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/amd64
-          push: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-amd64
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build \
+            --progress=plain \
+            -t esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-amd64 \
+            -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx \
+            .
+
+      - name: Push AMD64 Nginx Image
+        run: docker push esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-amd64
 
   # ============================================================================================
   # BUILD & PUSH ARM64 - FPM ALPINE
@@ -173,13 +170,29 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Build & Push ARM64 FPM-Alpine
-        uses: docker/build-push-action@v6
+      - name: Build ARM64 FPM-Alpine (local)
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build \
+            --platform linux/arm64 \
+            --progress=plain \
+            -t esst/php:${{ matrix.php_version }}-fpm-alpine-arm64 \
+            -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile \
+            .
+
+      - name: Save ARM64 FPM image
+        run: docker save -o fpm_test_arm64_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
+
+      - name: Upload ARM64 FPM artifact
+        uses: actions/upload-artifact@v5
         with:
-          platforms: linux/arm64
-          push: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
+          name: fpm_test_arm64_${{ matrix.php_version }}
+          path: fpm_test_arm64_${{ matrix.php_version }}.tar
+          retention-days: 1
+
+      - name: Push ARM64 FPM Image
+        run: docker push esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
 
   # ============================================================================================
   # BUILD & PUSH ARM64 - FPM + NGINX ALPINE
@@ -208,13 +221,26 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Build & Push ARM64 FPM-Nginx-Alpine
-        uses: docker/build-push-action@v6
+      - name: Download ARM64 FPM test image
+        uses: actions/download-artifact@v5
         with:
-          platforms: linux/arm64
-          push: true
-          file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-arm64
+          name: fpm_test_arm64_${{ matrix.php_version }}
+
+      - name: Load ARM64 FPM test image
+        run: docker load -i fpm_test_arm64_${{ matrix.php_version }}.tar
+
+      - name: Build ARM64 FPM-Nginx-Alpine
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build \
+            --progress=plain \
+            -t esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-arm64 \
+            -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx \
+            .
+
+      - name: Push ARM64 Nginx Image
+        run: docker push esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-arm64
 
   # ============================================================================================
   # FINALIZE: MERGE MULTI-ARCH
@@ -247,7 +273,6 @@ jobs:
 
       - name: Merge Multi-Arch Images
         run: |
-          # We combine the -amd64 and -arm64 tags into one multi-arch tag:
           docker buildx imagetools create \
             -t esst/php:${{ matrix.php_version }}-${{ matrix.variant }} \
             esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-amd64 \
