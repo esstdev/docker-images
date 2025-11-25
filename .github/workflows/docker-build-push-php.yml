@@ -63,13 +63,14 @@ jobs:
       - name: Build AMD64 FPM-Alpine (not pushed yet)
         run: |
           docker build \
+            --platform linux/amd64 \
             --progress=plain \
-            -t esst/php:${{ matrix.php_version }}-fpm-alpine \
+            -t esst/php:${{ matrix.php_version }}-fpm-alpine-amd64 \
             -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile \
             .
 
       - name: Run container for testing
-        run: docker run -d --name fpm_alpine_test_${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine
+        run: docker run -d --name fpm_alpine_test_${{ matrix.php_version }} esst/php:${{ matrix.php_version }}-fpm-alpine-amd64
 
       - name: Check PHP extensions
         run: |
@@ -83,7 +84,7 @@ jobs:
           echo "All required extensions are installed"
 
       - name: Save test FPM image
-        run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine
+        run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine-amd64
 
       - name: Upload test FPM artifact
         uses: actions/upload-artifact@v5
