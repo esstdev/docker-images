@@ -73,7 +73,7 @@ jobs:
 
       - name: Check PHP extensions
         run: |
-          extensions=("bcmath" "exif" "gd" "intl" "ldap" "pcntl" "pdo_mysql" "xml" "mbstring" "curl" "zip" "memcached" "imagick" "redis")
+          extensions=("bcmath" "exif" "gd" "intl" "ldap" "pcntl" "pdo_mysql" "xml" "mbstring" "curl" "zip" "imagick" "redis")
           for ext in "${extensions[@]}"; do
             if ! docker exec fpm_alpine_test_${{ matrix.php_version }} php -m | grep -wq "$ext"; then
               echo "$ext extension is NOT installed"
