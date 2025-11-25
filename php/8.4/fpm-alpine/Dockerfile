@@ -17,7 +17,7 @@ RUN apk add --no-cache --update \
         libjpeg-turbo-dev \
         libldap \
         libmcrypt-dev \
-        libmemcached-dev \
+        #libmemcached-dev \
         libpng-dev \
         libtool \
         libxml2-dev \
@@ -25,6 +25,7 @@ RUN apk add --no-cache --update \
         linux-headers \
         oniguruma-dev \
         openldap-dev \
+        openssl-dev \
         $PHPIZE_DEPS \
     \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -44,15 +45,15 @@ RUN apk add --no-cache --update \
         zip \
         opcache \
         sockets \
-    && pecl install \
-        memcached \
-        redis \
+    #&& pecl install \
+        #memcached \
+        #redis \
         #swoole \
-    && docker-php-ext-enable \
-        memcached \
-        redis \
+    #&& docker-php-ext-enable \
+        #memcached \
+        #redis \
         #swoole \
-    \
+    #\
     #&& git clone --depth 1 https://github.com/Imagick/imagick.git /tmp/imagick \
     #&& cd /tmp/imagick \
     #&& phpize \
@@ -60,13 +61,12 @@ RUN apk add --no-cache --update \
     #&& make \
     #&& make install \
     #&& docker-php-ext-enable imagick \
-    #\
+    \
     && rm -rf /tmp/*
 
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
-
-RUN IPE_ICU_EN_ONLY=1 install-php-extensions \
-    Imagick/imagick@65e27f2bc0
+COPY --from=ghcr.io/php/pie:bin /pie /usr/bin/pie
+RUN pie install imagick/imagick:dev-master
+RUN pie install phpredis/phpredis
 
 # Final stage
 FROM php:8.4-fpm-alpine3.22
@@ -74,10 +74,10 @@ FROM php:8.4-fpm-alpine3.22
 COPY --from=builder /usr/local/lib/php/extensions/no-debug-non-zts-* /usr/local/lib/php/extensions/tmp
 
 RUN \
-    # copy extensions from builder
+    # copy extensions from builder \
     extensions_dir=$(ls -d /usr/local/lib/php/extensions/no-debug-non-zts-*/); \
     cp -R /usr/local/lib/php/extensions/tmp/* "$extensions_dir"; \
-    # install required dependencies
+    # install required dependencies \
     apk add --no-cache --update \
         bash \
         curl \
@@ -85,10 +85,11 @@ RUN \
         imagemagick-pdf \
         libldap \
         libzip \
-        libmemcached \
+        #libmemcached \
         libtool \
         libgomp \
         supervisor \
+        openssl-dev \
     \
     && addgroup -g 1000 -S noroot \
     && adduser -u 1000 -S noroot -G noroot --home /home/noroot --shell /bin/bash \
@@ -109,7 +110,7 @@ RUN \
         mbstring \
         curl \
         zip \
-        memcached \
+        #memcached \
         redis \
         imagick \
         opcache \
