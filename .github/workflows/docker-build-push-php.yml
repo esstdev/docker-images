@@ -1,6 +1,9 @@
 name: esst/php
 
 on:
+  push:
+    branches:
+      - main
   release:
     types:
       - created
@@ -37,13 +40,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare
     # Only run if we're on a schedule or a 'php-*' tag.  Then also skip if the version doesn't match on a release.
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule'
+    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: github.event_name == 'release' && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -81,6 +84,15 @@ jobs:
             fi
           done
           echo "All required extensions are installed"
+      - name: Save test FPM image
+        run: docker save -o fpm_test_${{ matrix.php_version }}.tar esst/php:${{ matrix.php_version }}-fpm-alpine-test
+
+      - name: Upload test FPM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpm_test_${{ matrix.php_version }}
+          path: fpm_test_${{ matrix.php_version }}.tar
+          retention-days: 1
 
       - name: Push Tested AMD64 FPM-Alpine
         uses: docker/build-push-action@v6
@@ -96,13 +108,13 @@ jobs:
   build-test-and-push-amd64-nginx:
     runs-on: ubuntu-latest
     needs: [ prepare, build-test-and-push-amd64-fpm ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule'
+    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: github.event_name == 'release' && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -116,6 +128,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Download FPM test image
+        uses: actions/download-artifact@v4
+        with:
+          name: fpm_test_${{ matrix.php_version }}
+
+      - name: Load FPM test image
+        run: docker load -i fpm_test_${{ matrix.php_version }}.tar
 
       - name: Build AMD64 FPM-Nginx-Alpine
         id: docker_build_nginx
@@ -132,13 +152,13 @@ jobs:
   build-and-push-arm64-fpm:
     runs-on: ubuntu-24.04-arm
     needs: [ prepare, build-test-and-push-amd64-fpm ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule'
+    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: github.event_name == 'release' && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -167,13 +187,13 @@ jobs:
   build-and-push-arm64-nginx:
     runs-on: ubuntu-24.04-arm
     needs: [ prepare, build-and-push-arm64-fpm, build-test-and-push-amd64-nginx ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule'
+    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
     steps:
       - name: Skip non-matching versions on release
-        if: github.event_name == 'release' && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Check out code
@@ -206,13 +226,14 @@ jobs:
       - build-test-and-push-amd64-nginx
       - build-and-push-arm64-fpm
       - build-and-push-arm64-nginx
+    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.4, 8.5 ]
         variant: [ fpm-alpine, fpm-nginx-alpine ]
     steps:
       - name: Skip non-matching versions on release
-        if: github.event_name == 'release' && matrix.php_version != needs.prepare.outputs.php_version
+        if: (github.event_name == 'release' || github.event_name == 'push') && matrix.php_version != needs.prepare.outputs.php_version
         run: exit 0
 
       - name: Set up Docker Buildx
