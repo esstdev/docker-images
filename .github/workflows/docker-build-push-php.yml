@@ -63,6 +63,7 @@ jobs:
       - name: Build AMD64 FPM-Alpine (not pushed yet)
         run: |
           docker build \
+            --platform linux/amd64 \
             --progress=plain \
             -t esst/php:${{ matrix.php_version }}-fpm-alpine \
             -f ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile \
