@@ -140,7 +140,7 @@ RUN \
 			| xargs -r apk info --installed \
 			| sort -u > /tmp/runDeps.txt
 
-FROM esst/php:test-alpine-8.5
+FROM esst/php:8.5-fpm-alpine
 
 ARG NGINX_VERSION
 ARG NGINX_COMMIT
