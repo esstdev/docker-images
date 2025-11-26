@@ -1,7 +1,7 @@
 # adapted from https://github.com/macbre/docker-nginx-http3
 
 # https://github.com/nginx/nginx/releases
-ARG NGINX_VERSION=1.29.1
+ARG NGINX_VERSION=1.29.3
 
 # https://github.com/google/ngx_brotli
 ARG NGX_BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
