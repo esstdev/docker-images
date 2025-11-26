@@ -123,8 +123,8 @@ jobs:
         id: docker_build_nginx
         uses: docker/build-push-action@v6
         with:
-          build-args:
-            - ARCH=amd64
+          build-args: |
+            ARCH=amd64
           platforms: linux/amd64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
@@ -195,8 +195,8 @@ jobs:
       - name: Build & Push ARM64 FPM-Nginx-Alpine
         uses: docker/build-push-action@v6
         with:
-          build-args:
-            - ARCH=arm64
+          build-args: |
+            ARCH=arm64
           platforms: linux/arm64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
