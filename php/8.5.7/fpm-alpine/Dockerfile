@@ -118,4 +118,15 @@ RUN \
         sockets
         #swoole
 
+# Security upgrade: curl/libcurl 8.20.0 fixes CVE-2026-6276 and CVE-2026-5773.
+# The fix is not yet in Alpine 3.23 main, so pull just these two packages from
+# edge/main via a one-shot --repository with an exact version pin. Using a
+# version pin (not an @edge tag) forces the upgrade while leaving nothing in
+# /etc/apk/world that would break later apk calls; only curl/libcurl come from
+# edge, musl and the rest stay on 3.23. Bump the pin when edge moves past
+# 8.20.0-r1, and remove this block once the fix lands in Alpine 3.23 main.
+RUN apk add --no-cache \
+        --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+        'curl=8.20.0-r1' 'libcurl=8.20.0-r1'
+
 WORKDIR /app
