@@ -1,5 +1,5 @@
 # Stage 1
-FROM php:8.5.7-fpm-alpine3.22 AS builder
+FROM php:8.5.7-fpm-alpine3.23 AS builder
 
 RUN apk add --no-cache --update \
         autoconf \
@@ -69,7 +69,7 @@ RUN pie install imagick/imagick:dev-master
 RUN pie install phpredis/phpredis
 
 # Final stage
-FROM php:8.5.7-fpm-alpine3.22
+FROM php:8.5.7-fpm-alpine3.23
 
 COPY --from=builder /usr/local/lib/php/extensions/no-debug-non-zts-* /usr/local/lib/php/extensions/tmp
 

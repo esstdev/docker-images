@@ -59,7 +59,7 @@ ARG CONFIG="\
 
 ARG ARCH
 
-FROM alpine:3.22 AS base
+FROM alpine:3.23 AS base
 
 ARG NGINX_VERSION
 ARG NGX_BROTLI_COMMIT
@@ -167,7 +167,7 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
          -keyout /etc/nginx/ssl/nginx.key \
          -out /etc/nginx/ssl/nginx.crt -subj "/CN=localhost"
 
-COPY --chown=nginx:nginx ./php/8.5/fpm-alpine/nginx.conf /etc/nginx/nginx.conf
+COPY --chown=nginx:nginx ./php/8.5.7/fpm-alpine/nginx.conf /etc/nginx/nginx.conf
 
 # show env
 RUN env | sort
