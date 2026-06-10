@@ -42,7 +42,7 @@ jobs:
     if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
-        php_version: [ 8.4, 8.5 ]
+        php_version: [ 8.5.7 ]
     steps:
       - name: Skip non-matching versions on release
         if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
@@ -101,7 +101,7 @@ jobs:
     if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
-        php_version: [ 8.4, 8.5 ]
+        php_version: [ 8.5.7 ]
     steps:
       - name: Skip non-matching versions on release
         if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
@@ -139,7 +139,7 @@ jobs:
     if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
-        php_version: [ 8.4, 8.5 ]
+        php_version: [ 8.5.7 ]
     steps:
       - name: Skip non-matching versions on release
         if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
@@ -174,7 +174,7 @@ jobs:
     if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
-        php_version: [ 8.4, 8.5 ]
+        php_version: [ 8.5.7 ]
     steps:
       - name: Skip non-matching versions on release
         if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
@@ -214,7 +214,7 @@ jobs:
       - build-and-push-arm64-nginx
     strategy:
       matrix:
-        php_version: [ 8.4, 8.5 ]
+        php_version: [ 8.5.7 ]
         variant: [ fpm-alpine, fpm-nginx-alpine ]
     steps:
       - name: Skip non-matching versions on release
