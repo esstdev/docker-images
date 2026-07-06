@@ -124,9 +124,9 @@ RUN \
 # version pin (not an @edge tag) forces the upgrade while leaving nothing in
 # /etc/apk/world that would break later apk calls; only curl/libcurl come from
 # edge, musl and the rest stay on 3.23. Bump the pin when edge moves past
-# 8.20.0-r1, and remove this block once the fix lands in Alpine 3.23 main.
+# 8.21.0-r0, and remove this block once the fix lands in Alpine 3.23 main.
 RUN apk add --no-cache \
         --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-        'curl=8.20.0-r1' 'libcurl=8.20.0-r1'
+        'curl=8.21.0-r0' 'libcurl=8.21.0-r0'
 
 WORKDIR /app
