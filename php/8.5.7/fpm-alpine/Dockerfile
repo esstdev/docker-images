@@ -118,15 +118,47 @@ RUN \
         sockets
         #swoole
 
-# Security upgrade: curl/libcurl 8.20.0 fixes CVE-2026-6276 and CVE-2026-5773.
-# The fix is not yet in Alpine 3.23 main, so pull just these two packages from
-# edge/main via a one-shot --repository with an exact version pin. Using a
+# Security floor for packages flagged by the container scanner. These arrive
+# either from the upstream php:8.5.7-fpm-alpine3.23 image (openssl) or
+# transitively via the apk add above (libexpat via python3/fontconfig,
+# libblkid/libmount via glib, libuuid via libsm), and the published image had
+# gone stale on all of them simply because it had not been rebuilt in months.
+#
+# A plain rebuild would in fact resolve these same versions on its own, since
+# apk always picks the newest build in 3.23 main. The pins are therefore not
+# what performs the upgrade - they are an explicit, reviewable floor: the
+# versions are stated in this file instead of being an implicit function of the
+# build date, and the build fails loudly if a target ever becomes unavailable
+# rather than silently regressing. All targets come from Alpine 3.23 main, so
+# musl and the ABI are untouched.
+#
+# Maintenance: raise these pins when a newer build lands in 3.23 main. If a pin
+# ever breaks the build because Alpine dropped that exact release, raise it to
+# the current version rather than deleting the block.
+#   openssl/libssl3/libcrypto3/openssl-dev  -> 3.5.8-r0   (was 3.5.7-r0)
+#   libexpat                                -> 2.8.4-r0   (was 2.8.2-r0)
+#   libblkid/libmount/libuuid (util-linux)  -> 2.41.6-r1  (was 2.41.4-r0)
+RUN apk add --no-cache \
+        'openssl=3.5.8-r0' \
+        'libssl3=3.5.8-r0' \
+        'libcrypto3=3.5.8-r0' \
+        'openssl-dev=3.5.8-r0' \
+        'libexpat=2.8.4-r0' \
+        'libblkid=2.41.6-r1' \
+        'libmount=2.41.6-r1' \
+        'libuuid=2.41.6-r1'
+
+# curl/libcurl pinned to 8.22.0-r0. Originally added because the fix for
+# CVE-2026-6276 / CVE-2026-5773 (curl 8.20.0) was only in edge/main; that fix has
+# since reached Alpine 3.23 main, which now carries 8.22.0-r0 as well, so this
+# block is no longer strictly required and is kept only to hold the exact
+# version. Pulled via a one-shot --repository with an exact version pin: the
 # version pin (not an @edge tag) forces the upgrade while leaving nothing in
 # /etc/apk/world that would break later apk calls; only curl/libcurl come from
-# edge, musl and the rest stay on 3.23. Bump the pin when edge moves past
-# 8.21.0-r0, and remove this block once the fix lands in Alpine 3.23 main.
+# edge, musl and the rest stay on 3.23. Drop this block to simply track 3.23
+# main, or bump the pin when a newer curl is needed.
 RUN apk add --no-cache \
         --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-        'curl=8.21.0-r0' 'libcurl=8.21.0-r0'
+        'curl=8.22.0-r0' 'libcurl=8.22.0-r0'
 
 WORKDIR /app

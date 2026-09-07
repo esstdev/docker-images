@@ -6,6 +6,14 @@ ARG NGINX_VERSION=1.29.3
 # https://github.com/google/ngx_brotli
 ARG NGX_BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
 
+# Immutable build suffix for the base image, e.g. "-b2". Empty for a normal
+# build, so the stable esst/php:8.5.7-fpm-alpine-<arch> is used. CI sets it on a
+# test build so the image layers on the suffixed base and the stable tags are
+# never touched. Must live here with the other global ARGs: an ARG declared
+# after the first FROM is scoped to that stage and would be ignored by the
+# FROM line below.
+ARG BASE_SUFFIX=
+
 # NGINX UID / GID
 ARG NGINX_USER_UID=100
 ARG NGINX_GROUP_GID=101
@@ -137,7 +145,11 @@ RUN \
 			| xargs -r apk info --installed \
 			| sort -u > /tmp/runDeps.txt
 
-FROM esst/php:8.5.7-fpm-alpine-${ARCH}
+# ARCH and BASE_SUFFIX are redeclared here to bring the global values back into
+# scope for this FROM (a global ARG is consumed by the first FROM in the file).
+ARG ARCH
+ARG BASE_SUFFIX
+FROM esst/php:8.5.7-fpm-alpine${BASE_SUFFIX}-${ARCH}
 
 ARG NGINX_VERSION
 ARG NGINX_USER_UID

@@ -1,35 +1,50 @@
 name: esst/php
 
+# Manual only. Building and publishing to Docker Hub is a deliberate act: neither
+# a merge to main nor a GitHub release triggers a build, so the tags production
+# consumes can never be overwritten as a side effect of landing code. Run this
+# from Actions -> "esst/php" -> "Run workflow".
 on:
-  push:
-    branches:
-      - main
-  release:
-    types:
-      - created
+  workflow_dispatch:
+    inputs:
+      build_suffix:
+        description: >-
+          Immutable build suffix, e.g. "b2". When set, the run publishes ONLY the
+          suffixed tags (8.5.7-fpm-nginx-alpine-b2) and leaves the mobile tags
+          (8.5.7-fpm-nginx-alpine) untouched, so nothing in production inherits
+          the new image until it is promoted. Leave empty to publish the mobile
+          tags as usual.
+        required: false
+        type: string
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      php_version: ${{ steps.set_job_output.outputs.version }}
+      suffix: ${{ steps.set_suffix.outputs.suffix }}
+      publish_mobile: ${{ steps.set_suffix.outputs.publish_mobile }}
     steps:
-      - name: Extract PHP version from tag (for release)
-        id: extract_version
+      - name: Resolve build suffix
+        id: set_suffix
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            version="$(echo "$GITHUB_REF" | grep -oP '(?<=php-)\d+\.\d+')"
-            echo "VERSION=$version" >> $GITHUB_ENV
+          raw='${{ inputs.build_suffix }}'
+          # strip whitespace and a leading dash, so both "b2" and "-b2" work
+          clean="$(echo "$raw" | tr -d '[:space:]' | sed 's/^-//')"
+          if [[ -n "$clean" ]]; then
+            if [[ ! "$clean" =~ ^[A-Za-z0-9._-]+$ ]]; then
+              echo "Invalid build_suffix: '$raw'" >&2
+              exit 1
+            fi
+            echo "suffix=-$clean" >> $GITHUB_OUTPUT
+            echo "publish_mobile=false" >> $GITHUB_OUTPUT
+            echo "Publishing SUFFIXED tags only: *-$clean (mobile tags untouched)"
           else
-            # If not a release, build ALL versions
-            echo "VERSION=all" >> $GITHUB_ENV
+            echo "suffix=" >> $GITHUB_OUTPUT
+            echo "publish_mobile=true" >> $GITHUB_OUTPUT
+            echo "Publishing mobile tags (no suffix)"
           fi
 
-      - name: Set job output
-        id: set_job_output
-        shell: bash
-        run: echo "version=${VERSION:-all}" >> $GITHUB_OUTPUT
 
   # ============================================================================================
   # BUILD & PUSH AMD64 - FPM ALPINE
@@ -37,15 +52,10 @@ jobs:
   build-test-and-push-amd64-fpm:
     runs-on: ubuntu-latest
     needs: prepare
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.5.7 ]
     steps:
-      - name: Skip non-matching versions on release
-        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
-        run: exit 0
-
       - name: Check out code
         uses: actions/checkout@v6
 
@@ -88,7 +98,7 @@ jobs:
           platforms: linux/amd64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-amd64
+          tags: esst/php:${{ matrix.php_version }}-fpm-alpine${{ needs.prepare.outputs.suffix }}-amd64
 
   # ============================================================================================
   # BUILD & PUSH AMD64 - FPM + NGINX ALPINE
@@ -96,15 +106,10 @@ jobs:
   build-test-and-push-amd64-nginx:
     runs-on: ubuntu-latest
     needs: [ prepare, build-test-and-push-amd64-fpm ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.5.7 ]
     steps:
-      - name: Skip non-matching versions on release
-        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
-        run: exit 0
-
       - name: Check out code
         uses: actions/checkout@v6
 
@@ -123,10 +128,11 @@ jobs:
         with:
           build-args: |
             ARCH=amd64
+            BASE_SUFFIX=${{ needs.prepare.outputs.suffix }}
           platforms: linux/amd64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-amd64
+          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine${{ needs.prepare.outputs.suffix }}-amd64
 
   # ============================================================================================
   # BUILD & PUSH ARM64 - FPM ALPINE
@@ -134,15 +140,10 @@ jobs:
   build-and-push-arm64-fpm:
     runs-on: ubuntu-24.04-arm
     needs: [ prepare, build-test-and-push-amd64-fpm ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.5.7 ]
     steps:
-      - name: Skip non-matching versions on release
-        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
-        run: exit 0
-
       - name: Check out code
         uses: actions/checkout@v6
 
@@ -161,7 +162,7 @@ jobs:
           platforms: linux/arm64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile
-          tags: esst/php:${{ matrix.php_version }}-fpm-alpine-arm64
+          tags: esst/php:${{ matrix.php_version }}-fpm-alpine${{ needs.prepare.outputs.suffix }}-arm64
 
   # ============================================================================================
   # BUILD & PUSH ARM64 - FPM + NGINX ALPINE
@@ -169,15 +170,10 @@ jobs:
   build-and-push-arm64-nginx:
     runs-on: ubuntu-24.04-arm
     needs: [ prepare, build-and-push-arm64-fpm, build-test-and-push-amd64-nginx ]
-    if: contains(github.ref, 'php-') || github.event_name == 'schedule' || github.event_name == 'push'
     strategy:
       matrix:
         php_version: [ 8.5.7 ]
     steps:
-      - name: Skip non-matching versions on release
-        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
-        run: exit 0
-
       - name: Check out code
         uses: actions/checkout@v6
 
@@ -195,10 +191,11 @@ jobs:
         with:
           build-args: |
             ARCH=arm64
+            BASE_SUFFIX=${{ needs.prepare.outputs.suffix }}
           platforms: linux/arm64
           push: true
           file: ./php/${{ matrix.php_version }}/fpm-alpine/Dockerfile.nginx
-          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine-arm64
+          tags: esst/php:${{ matrix.php_version }}-fpm-nginx-alpine${{ needs.prepare.outputs.suffix }}-arm64
 
   # ============================================================================================
   # FINALIZE: MERGE MULTI-ARCH
@@ -206,6 +203,7 @@ jobs:
   finalize-multiarch:
     runs-on: ubuntu-latest
     needs:
+      - prepare
       - build-test-and-push-amd64-fpm
       - build-test-and-push-amd64-nginx
       - build-and-push-arm64-fpm
@@ -215,10 +213,6 @@ jobs:
         php_version: [ 8.5.7 ]
         variant: [ fpm-alpine, fpm-nginx-alpine ]
     steps:
-      - name: Skip non-matching versions on release
-        if: (github.event_name == 'release') && matrix.php_version != needs.prepare.outputs.php_version
-        run: exit 0
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -229,8 +223,25 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Merge Multi-Arch Images
+        env:
+          SUFFIX: ${{ needs.prepare.outputs.suffix }}
+          PUBLISH_MOBILE: ${{ needs.prepare.outputs.publish_mobile }}
+          VARIANT: ${{ matrix.php_version }}-${{ matrix.variant }}
         run: |
+          set -euo pipefail
+
+          # Always publish the exact tag this run built. With a suffix that is an
+          # immutable tag (e.g. 8.5.7-fpm-nginx-alpine-b2); without one it is the
+          # mobile tag itself, which keeps the previous behaviour intact.
           docker buildx imagetools create \
-            -t esst/php:${{ matrix.php_version }}-${{ matrix.variant }} \
-            esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-amd64 \
-            esst/php:${{ matrix.php_version }}-${{ matrix.variant }}-arm64
+            -t "esst/php:${VARIANT}${SUFFIX}" \
+            "esst/php:${VARIANT}${SUFFIX}-amd64" \
+            "esst/php:${VARIANT}${SUFFIX}-arm64"
+          echo "Published esst/php:${VARIANT}${SUFFIX}"
+
+          # The mobile tag is what production consumes, so a suffixed (test) run
+          # must leave it alone. Promote by re-running this workflow with an empty
+          # build_suffix once the suffixed image has been validated.
+          if [[ "${PUBLISH_MOBILE}" != "true" ]]; then
+            echo "Test build: esst/php:${VARIANT} left untouched (promote separately)."
+          fi
