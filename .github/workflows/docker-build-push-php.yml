@@ -27,10 +27,17 @@ jobs:
       - name: Resolve build suffix
         id: set_suffix
         shell: bash
+        # BUILD_SUFFIX is passed through env, never interpolated into the script
+        # body: a ${{ }} expression is substituted into the source before bash
+        # parses it, so a crafted input could close the quoting and execute
+        # arbitrary commands with the runner's credentials. As an env var it is
+        # data, and the validation below actually guards it.
+        env:
+          BUILD_SUFFIX: ${{ inputs.build_suffix }}
         run: |
-          raw='${{ inputs.build_suffix }}'
+          raw="$BUILD_SUFFIX"
           # strip whitespace and a leading dash, so both "b2" and "-b2" work
-          clean="$(echo "$raw" | tr -d '[:space:]' | sed 's/^-//')"
+          clean="$(printf '%s' "$raw" | tr -d '[:space:]' | sed 's/^-//')"
           if [[ -n "$clean" ]]; then
             if [[ ! "$clean" =~ ^[A-Za-z0-9._-]+$ ]]; then
               echo "Invalid build_suffix: '$raw'" >&2
